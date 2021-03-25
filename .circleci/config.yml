@@ -1,0 +1,24 @@
+version: 2.1
+orbs:
+  coveralls: coveralls/coveralls@1.0.6
+jobs:
+  build-and-test:
+    docker:
+      - image: 'circleci/node:14.15.3'
+    steps:
+      - checkout
+      - run:
+          name: Install and Test
+          no_output_timeout: 20m
+          command: yarn && yarn coverage
+      - coveralls/upload
+      - store_artifacts:
+          path: coverage
+      - store_artifacts:
+          path: test-results.xml
+      - store_artifacts:
+          path: coverage.json
+workflows:
+    build-and-test:
+      jobs:
+        - build-and-test

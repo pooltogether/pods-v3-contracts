@@ -1,0 +1,23 @@
+{
+  "extends": "solium:recommended",
+  "lintOnSave": "false",
+  "plugins": [
+    "security"
+  ],
+  "rules": {
+    "no-call-value": "off",
+    "quotes": [
+      "error",
+      "double"
+    ],
+    "indentation": [
+      "error",
+      4
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ]
+  }
+}
+
