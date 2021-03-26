@@ -59,6 +59,7 @@ const createPeripheryContract = async (testing, config) => {
 
   return testing;
 };
+
 const createPodAndTokenDrop = async (testing, config) => {
   // console.log(testing, config, "testing, config");
 
@@ -83,7 +84,6 @@ const createPodAndTokenDrop = async (testing, config) => {
   // CallStatic Create Pod/TokenDrop using PodFactory Smart Contract
   testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
     config.podDAI.prizePool,
-    config.podDAI.token,
     config.podDAI.ticket,
     config.podDAI.pool,
     config.podDAI.faucet,
@@ -93,7 +93,6 @@ const createPodAndTokenDrop = async (testing, config) => {
   // Create Pod/TokenDrop using PodFactory Smart Contract
   testing.pod_and_tokendrop_create = await testing.podFactory.create(
     config.podDAI.prizePool,
-    config.podDAI.token,
     config.podDAI.ticket,
     config.podDAI.pool,
     config.podDAI.faucet,
@@ -115,8 +114,63 @@ const createPodAndTokenDrop = async (testing, config) => {
   return testing.pod_and_tokendrop_static;
 };
 
+const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
+  // console.log(testing, config, "testing, config");
+
+  // Contract Factories
+  testing.POD_FACTORY = await ethers.getContractFactory("PodFactory");
+  testing.TOKEN_DROP_FACTORY = await ethers.getContractFactory(
+    "TokenDropFactory"
+  );
+  testing.POD_MANAGER = await ethers.getContractFactory("PodManager");
+
+  // Deploy PodManager Smart Contract
+  testing.podManager = await testing.POD_MANAGER.deploy();
+
+  // Deploy PodFactory Smart Contract
+  testing.tokenDropFactory = await testing.TOKEN_DROP_FACTORY.deploy();
+
+  // Deploy PodFactory Smart Contract
+  testing.podFactory = await testing.POD_FACTORY.deploy(
+    testing.tokenDropFactory.address
+  );
+
+  // CallStatic Create Pod/TokenDrop using PodFactory Smart Contract
+  testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
+    config.prizePool,
+    config.ticket,
+    config.pool,
+    config.faucet,
+    testing.podManager.address
+  );
+
+  // Create Pod/TokenDrop using PodFactory Smart Contract
+  testing.pod_and_tokendrop_create = await testing.podFactory.create(
+    config.prizePool,
+    config.ticket,
+    config.pool,
+    config.faucet,
+    testing.podManager.address
+  );
+
+  testing.pod = await ethers.getContractAt(
+    "Pod",
+    testing.pod_and_tokendrop_static[0]
+  );
+
+  testing.tokenDrop = await ethers.getContractAt(
+    "TokenDrop",
+    testing.pod_and_tokendrop_static[1]
+  );
+
+  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.drop());
+
+  return testing.pod_and_tokendrop_static;
+};
+
 module.exports = {
   createPodAndTokenDrop,
+  createPodAndTokenDropFromStaticVariables,
   setupContractFactories,
   createPeripheryContract,
   setupSigners,

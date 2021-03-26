@@ -8,9 +8,9 @@ import "./TokenListenerInterface.sol";
 /// @title Escrows assets and deposits them into a yield source.  Exposes interest to Prize Strategy.  Users deposit and withdraw from this contract to participate in Prize Pool.
 /// @notice Accounting is managed using Controlled Tokens, whose mint and burn functions can only be called by this contract.
 /// @dev Must be inherited to provide specific yield-bearing asset control, such as Compound cTokens
-interface IPrizePoolMinimal {
+interface IPrizePool {
     // WARNING: VERIFY THIS VALID PLACE TO INCLUDE FUNCTION
-    function prizeStrategy() external returns (TokenListenerInterface);
+    function prizeStrategy() external returns (address);
 
     /// @notice Deposit assets into the Prize Pool in exchange for tokens
     /// @param to The address receiving the newly minted tokens
@@ -75,6 +75,46 @@ interface IPrizePoolMinimal {
         address controlledToken
     ) external;
 
+    /// @notice Called by the Prize-Strategy to transfer out external ERC20 tokens
+    /// @dev Used to transfer out tokens held by the Prize Pool.  Could be liquidated, or anything.
+    /// @param to The address of the winner that receives the award
+    /// @param amount The amount of external assets to be awarded
+    /// @param externalToken The address of the external asset token being awarded
+    function transferExternalERC20(
+        address to,
+        address externalToken,
+        uint256 amount
+    ) external;
+
+    /// @notice Called by the Prize-Strategy to award external ERC20 prizes
+    /// @dev Used to award any arbitrary tokens held by the Prize Pool
+    /// @param to The address of the winner that receives the award
+    /// @param amount The amount of external assets to be awarded
+    /// @param externalToken The address of the external asset token being awarded
+    function awardExternalERC20(
+        address to,
+        address externalToken,
+        uint256 amount
+    ) external;
+
+    /// @notice Called by the prize strategy to award external ERC721 prizes
+    /// @dev Used to award any arbitrary NFTs held by the Prize Pool
+    /// @param to The address of the winner that receives the award
+    /// @param externalToken The address of the external NFT token being awarded
+    /// @param tokenIds An array of NFT Token IDs to be transferred
+    function awardExternalERC721(
+        address to,
+        address externalToken,
+        uint256[] calldata tokenIds
+    ) external;
+
+    /// @notice Sweep all timelocked balances and transfer unlocked assets to owner accounts
+    /// @param users An array of account addresses to sweep balances for
+    /// @return The total amount of assets swept from the Prize Pool
+    function sweepTimelockBalances(address[] calldata users)
+        external
+        returns (uint256);
+
     /// @notice Calculates a timelocked withdrawal duration and credit consumption.
     /// @param from The user who is withdrawing
     /// @param amount The amount the user is withdrawing
@@ -108,6 +148,23 @@ interface IPrizePoolMinimal {
         uint256 _interest
     ) external view returns (uint256 durationSeconds);
 
+    /// @notice Returns the credit balance for a given user.  Not that this includes both minted credit and pending credit.
+    /// @param user The user whose credit balance should be returned
+    /// @return The balance of the users credit
+    function balanceOfCredit(address user, address controlledToken)
+        external
+        returns (uint256);
+
+    /// @notice Sets the rate at which credit accrues per second.  The credit rate is a fixed point 18 number (like Ether).
+    /// @param _controlledToken The controlled token for whom to set the credit plan
+    /// @param _creditRateMantissa The credit rate to set.  Is a fixed point 18 decimal (like Ether).
+    /// @param _creditLimitMantissa The credit limit to set.  Is a fixed point 18 decimal (like Ether).
+    function setCreditPlanOf(
+        address _controlledToken,
+        uint128 _creditRateMantissa,
+        uint128 _creditLimitMantissa
+    ) external;
+
     /// @notice Returns the credit rate of a controlled token
     /// @param controlledToken The controlled token to retrieve the credit rates for
     /// @return creditLimitMantissa The credit limit fraction.  This number is used to calculate both the credit limit and early exit fee.
@@ -117,9 +174,21 @@ interface IPrizePoolMinimal {
         view
         returns (uint128 creditLimitMantissa, uint128 creditRateMantissa);
 
+    /// @notice Allows the Governor to set a cap on the amount of liquidity that he pool can hold
+    /// @param _liquidityCap The new liquidity cap for the prize pool
+    function setLiquidityCap(uint256 _liquidityCap) external;
+
+    /// @notice Sets the prize strategy of the prize pool.  Only callable by the owner.
+    /// @param _prizeStrategy The new prize strategy.  Must implement TokenListenerInterface
+    function setPrizeStrategy(TokenListenerInterface _prizeStrategy) external;
+
     /// @dev Returns the address of the underlying ERC20 asset
     /// @return The address of the asset
     function token() external view returns (address);
+
+    /// @notice An array of the Tokens controlled by the Prize Pool (ie. Tickets, Sponsorship)
+    /// @return An array of controlled token addresses
+    function tokens() external view returns (address[] memory);
 
     /// @notice The timestamp at which an account's timelocked balance will be made available to sweep
     /// @param user The address of an account with timelocked assets
@@ -133,4 +202,8 @@ interface IPrizePoolMinimal {
     /// @param user The address of an account with timelocked assets
     /// @return The amount of assets that have been timelocked
     function timelockBalanceOf(address user) external view returns (uint256);
+
+    /// @notice The total of all controlled tokens and timelock.
+    /// @return The current total of all tokens and timelock.
+    function accountedBalance() external view returns (uint256);
 }

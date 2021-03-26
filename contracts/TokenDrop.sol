@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
-// Testing
-import "hardhat/console.sol";
-
 // External Interfaces
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
@@ -92,18 +89,14 @@ contract TokenDrop is Initializable {
     /**
      * @notice Add Pod reference to TokenDrop Smart Contract
      */
-    function initializePod(address _measure) external {
-        require(msg.sender == factory, "Pod: Unauthorized PodDrop Factory");
-        measure = IERC20Upgradeable(_measure);
-    }
+    // function initializePod(address _measure) external {
+    //     require(msg.sender == factory, "Pod: Unauthorized PodDrop Factory");
+    //     measure = IERC20Upgradeable(_measure);
+    // }
 
     /***********************************|
     |   Public/External                 |
     |__________________________________*/
-
-    function _currentTime() internal view returns (uint256) {
-        return block.timestamp;
-    }
 
     /**
      * @notice Should be called before "measure" tokens are transferred or burned

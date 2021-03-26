@@ -86,8 +86,6 @@ describe("TokenDrop", function() {
     // approve()
     const balanceOf = await testing.pool.balanceOf(testing.owner.address);
 
-    console.log(balanceOf.toString());
-
     // approve()
     await testing.pool.approve(
       testing.tokenDrop.address,
