@@ -1,4 +1,5 @@
-const { ethers, waffle } = require("hardhat");
+const hardhat = require("hardhat");
+const { ethers } = require("hardhat");
 const { expect, assert } = require("chai");
 const { constants, utils } = require("ethers");
 
@@ -14,11 +15,12 @@ const {
   createPeripheryContract,
 } = require("./utilities/contracts");
 
-describe("Pod - Batch Deposits", function() {
+describe("Pod - Deposit", function() {
   const config = getConfig("mainnet");
   let testing = {};
 
   before(async () => {
+    provider = hardhat.ethers.provider;
     testing = await setupSigners(testing);
     testing = await setupContractFactories(testing);
     testing = await createPeripheryContract(testing, config);
@@ -27,7 +29,7 @@ describe("Pod - Batch Deposits", function() {
     await purchaseToken(
       config.tokens.WETH,
       config.podDAI.token,
-      ethers.utils.parseEther("50"),
+      ethers.utils.parseEther("500"),
       testing.owner.address,
       {
         UniswapRouter: config.contracts.UniswapRouter,
@@ -42,7 +44,94 @@ describe("Pod - Batch Deposits", function() {
     testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDrop);
   });
 
-  describe("Single User", function() {
+  it("should fail when depositing 0", async function() {
+    await expect(
+      testing.pod.depositTo(testing.owner.address, utils.parseEther("0"))
+    ).to.be.revertedWith("Pod:invalid-amount");
+  });
+
+  it("should succeed when depositing above 0", async function() {
+    // approve()
+    await testing.token.approve(testing.pod.address, utils.parseEther("1000"));
+
+    // depositTo()
+    const depositTo = await testing.pod.depositTo(
+      testing.alice.address,
+      utils.parseEther("1000")
+    );
+
+    // getTransactionReceipt(depositTo.hash)
+    let receipt = await provider.getTransactionReceipt(depositTo.hash);
+
+    // Check All Events
+    expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
+      "DripCalculate"
+    );
+    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
+      "Transfer"
+    );
+    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
+      "Transfer"
+    );
+    expect(testing.pod.interface.parseLog(receipt.logs[3]).name).to.equal(
+      "Deposited"
+    );
+  });
+
+  it("should succeed when depositing twice and have equal deposits and shares", async function() {
+    // approve()
+    await testing.token.approve(testing.pod.address, utils.parseEther("1000"));
+
+    // depositTo()
+    const depositTo = await testing.pod.depositTo(
+      testing.alice.address,
+      utils.parseEther("1000")
+    );
+
+    // getTransactionReceipt(depositTo.hash)
+    let receipt = await provider.getTransactionReceipt(depositTo.hash);
+
+    // Check All Events
+    expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
+      "DripCalculate"
+    );
+    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
+      "Transfer"
+    );
+    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
+      "Transfer"
+    );
+    expect(testing.pod.interface.parseLog(receipt.logs[3]).name).to.equal(
+      "Deposited"
+    );
+
+    // Second depositTo()
+
+    // depositTo()
+    const depositToSecond = testing.pod.depositTo(
+      testing.alice.address,
+      utils.parseEther("1000")
+    );
+
+    // Event LogLiquidatedERC721
+    await expect(depositToSecond)
+      .to.emit(testing.podManager, "Deposited")
+      .withArgs(
+        testing.owner.address,
+        utils.parseEther("1000"),
+        utils.parseEther("2000")
+      );
+
+    // depositTo()
+    const totalSupply = await testing.pod.totalSupply(
+      testing.alice.address,
+      utils.parseEther("1000")
+    );
+
+    expect(totalSupply).equal(utils.parseEther("2000"));
+  });
+
+  describe("Single User [ @skip-on-coverage ]", function() {
     /******************|
       | Before Each
     /******************/
@@ -58,7 +147,7 @@ describe("Pod - Batch Deposits", function() {
       await testing.token.transfer(testing.alice.address, toWei("2000"));
     });
 
-    it("should deposit token, run batch and burn all shares for total Pod balance", async function() {
+    it("should deposit token, run batch and burn all shares for total Pod balance [ @skip-on-coverage ]", async function() {
       testing.pod = testing.pod.connect(testing.alice);
       testing.token = testing.token.connect(testing.alice);
 
@@ -132,7 +221,7 @@ describe("Pod - Batch Deposits", function() {
     });
   });
 
-  describe("Multiple Users", function() {
+  describe("Multiple Users [ @skip-on-coverage ]", function() {
     beforeEach(async () => {
       // ZERO out Alice's token balance
       testing.token = testing.token.connect(testing.alice);

@@ -4,13 +4,29 @@ const { getConfig } = require("../lib/config");
 const {
   setupSigners,
   createPodAndTokenDrop,
+  createPodAndTokenDropFromStaticVariables,
   setupContractFactories,
   createPeripheryContract,
 } = require("./utilities/contracts");
+const { constants } = require("ethers");
 
-describe("PodFactory", function () {
+describe("PodFactory", function() {
   let testing = {};
   const config = getConfig("mainnet");
+
+  const podDAI = {
+    prizePool: "0xEBfb47A7ad0FD6e57323C8A42B2E5A6a4F68fc1a",
+    token: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+    ticket: "0x334cBb5858417Aee161B53Ee0D5349cCF54514CF",
+    pool: "0x0cEC1A9154Ff802e7934Fc916Ed7Ca50bDE6844e",
+    faucet: "0xF362ce295F2A4eaE4348fFC8cDBCe8d729ccb8Eb",
+  };
+
+  const prizePool = "0xEBfb47A7ad0FD6e57323C8A42B2E5A6a4F68fc1a";
+  const token = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
+  const ticket = "0x334cBb5858417Aee161B53Ee0D5349cCF54514CF";
+  const pool = "0x0cEC1A9154Ff802e7934Fc916Ed7Ca50bDE6844e";
+  const faucet = "0xF362ce295F2A4eaE4348fFC8cDBCe8d729ccb8Eb";
 
   before(async () => {
     testing = await setupSigners(testing);
@@ -22,58 +38,86 @@ describe("PodFactory", function () {
   | Before Each
   /******************/
   beforeEach(async () => {
-    const [pod, tokenDrop] = await createPodAndTokenDrop(testing, config);
+    const [pod, tokenDrop] = await createPodAndTokenDropFromStaticVariables(
+      testing,
+      podDAI
+    );
     testing.pod = await ethers.getContractAt("Pod", pod);
     testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDrop);
   });
 
   // Test Basics
   // ----------------------------------------------------------------
-  it("should have the correct name", async function () {
-    // Token Name
-    const tName = await testing.token.name();
+  it("should have the TokenDropFactory reference", async function() {
+    // tokenDropFactory()
+    const tokenDropFactory = await testing.podFactory.tokenDropFactory();
 
-    // Pod Name
-    const name = await testing.pod.name();
-    expect(name).equal(`pPod ${tName}`);
+    expect(tokenDropFactory).equal(testing.tokenDropFactory.address);
   });
 
-  it("should have the correct symbol", async function () {
-    // Token Symbol
-    const tSymbol = await testing.token.symbol();
-
-    // Pod Symbol
-    const symbol = await testing.pod.symbol();
-    expect(symbol).equal(`pp${tSymbol}`);
+  it("should have correct factory reference in Pod smart contract", async function() {
+    // factory()
+    const factory = await testing.pod.factory();
+    expect(factory).equal(testing.podFactory.address);
   });
 
-  it("should have the correct owner", async function () {
-    // owner()
-    const owner = await testing.pod.owner();
-    expect(owner).equal(testing.owner.address);
+  it("should fail to create a new Pod with incorrect ticket", async function() {
+    // create()
+    const tokenDropFactory = testing.podFactory.create(
+      prizePool,
+      constants.AddressZero,
+      pool,
+      faucet,
+      constants.AddressZero
+    );
+
+    await expect(tokenDropFactory).to.be.revertedWith(
+      "Pod:initialize-invalid-ticket"
+    );
   });
 
-  it("should have the correct prize pool", async function () {
-    // PrizePool
-    const prizePool = await testing.pod.prizePool();
-    expect(prizePool).equal(config.podDAI.prizePool);
+  it("should succeed creating a new Pod with with DAI settings", async function() {
+    // callStatic.create()
+    const tokenDropFactoryCallStatic = await testing.podFactory.callStatic.create(
+      prizePool,
+      ticket,
+      pool,
+      faucet,
+      constants.AddressZero // PodLiquidatorManager
+    );
+
+    // create()
+    const tokenDropFactory = testing.podFactory.create(
+      prizePool,
+      ticket,
+      pool,
+      faucet,
+      constants.AddressZero // PodLiquidatorManager
+    );
+
+    // Validate Pod/TokenDrop using events.
+    await expect(tokenDropFactory)
+      .to.emit(testing.podFactory, "LogCreatedPodAndTokenDrop")
+      .withArgs(tokenDropFactoryCallStatic[0], tokenDropFactoryCallStatic[1]);
   });
 
-  it("should have the correct deposit token", async function () {
-    // Token
-    const token = await testing.pod.token();
-    expect(token).equal(config.podDAI.token);
+  it("should fail when setting token drop reference from not authorized account", async function() {
+    testing.pod = testing.pod.connect(testing.alice);
+
+    // setTokenDrop()
+    const setTokenDrop = testing.pod.setTokenDrop(constants.AddressZero);
+    // expect(setTokenDrop).equal(testing.podFactory.address);
+    await expect(setTokenDrop).to.be.revertedWith(
+      "Pod:unauthorized-set-token-drop"
+    );
   });
 
-  it("should have the correct ticket token", async function () {
-    // Ticket
-    const ticket = await testing.pod.ticket();
-    expect(ticket).equal(config.podDAI.ticket);
-  });
+  it("should succedd when setting token drop reference from not authorized account", async function() {
+    // setTokenDrop()
+    await testing.pod.setTokenDrop(constants.AddressZero);
 
-  it("should have the correct pool token", async function () {
-    // PoolToken
-    const pool = await testing.pod.pool();
-    expect(pool).equal(config.podDAI.pool);
+    // drop()
+    const drop = await testing.pod.drop();
+    expect(drop).equal(constants.AddressZero);
   });
 });

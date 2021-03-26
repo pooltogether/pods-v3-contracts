@@ -25,7 +25,8 @@ import "./IPodManager.sol";
 
 // External Interfaces
 import "./interfaces/TokenFaucet.sol";
-import "./interfaces/IPrizePoolMinimal.sol";
+import "./interfaces/IPrizePool.sol";
+// import "./interfaces/IPrizePool.sol";
 import "./interfaces/IPrizeStrategyMinimal.sol";
 
 /**
@@ -54,13 +55,18 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     TokenDrop public drop;
 
     // Private
-    IPrizePoolMinimal private _prizePool;
+    IPrizePool private _prizePool;
 
     // Manager
     IPodManager public manager;
 
     // Factory
     address public factory;
+
+    /**
+     * @notice Match tokens to TokenDrop references
+     */
+    mapping(address => TokenDrop) public drops;
 
     /***********************************|
     |   Events                          |
@@ -148,27 +154,36 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      */
     function initialize(
         address _prizePoolTarget,
-        address _token,
         address _ticket,
         address _pool,
         address _faucet,
         address _manager
-    ) external initializer{
+    ) external initializer {
+        // Prize Pool
+        _prizePool = IPrizePool(_prizePoolTarget);
+
         // Owner Token
         __Ownable_init_unchained();
 
         // Initialize Token
         __ERC20_init_unchained(
-            string(abi.encodePacked("pPod ", ERC20(_token).name())),
-            string(abi.encodePacked("pp", ERC20(_token).symbol()))
+            string(abi.encodePacked("pPod ", ERC20(_prizePool.token()).name())),
+            string(abi.encodePacked("pp", ERC20(_prizePool.token()).symbol()))
         );
 
-        // Prize Pool
-        _prizePool = IPrizePoolMinimal(_prizePoolTarget);
+        // Request PrizePool Tickets
+        address[] memory tickets = _prizePool.tokens();
 
-        // ERC20 Tokens
-        token = IERC20(_token);
-        ticket = IERC20(_ticket);
+        // console.log("TICKETs", _ticket, tickets[1]);
+        // Compare initialized ticket to prizePool.tokens[1]
+        require(
+            address(_ticket) == address(tickets[1]),
+            "Pod:initialize-invalid-ticket"
+        );
+
+        // Initialize ERC20 Tokens
+        token = IERC20(_prizePool.token());
+        ticket = IERC20(tickets[1]);
         pool = IERC20(_pool);
         faucet = TokenFaucet(_faucet);
 
@@ -183,8 +198,18 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @dev Initialize the Pod Smart Contact
      */
     function setTokenDrop(address _tokenDrop) external {
-        require(msg.sender == factory, "Pod: Unauthorized PodDrop Factory");
+        // console.log("ADDRESS", factory, owner());
+        require(
+            msg.sender == factory || msg.sender == owner(),
+            "Pod:unauthorized-set-token-drop"
+        );
+
+        // Set TokenDrop
         drop = TokenDrop(_tokenDrop);
+
+        // Map token to TokenDrop
+        // TODO: Add support for additional TokenDrops
+        drops[address(token)] = drop;
     }
 
     /***********************************|
@@ -238,7 +263,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         override
         returns (uint256)
     {
-        require(tokenAmount > 0, "Increase Deposit Amount");
+        require(tokenAmount > 0, "Pod:invalid-amount");
 
         // Allocate Shares from Deposit To Amount
         uint256 shares = _deposit(to, tokenAmount);
@@ -263,7 +288,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         // Check User Balance
         require(
             balanceOf(msg.sender) >= shareAmount,
-            "Insufficient Share Balance"
+            "Pod:insufficient-shares"
         );
 
         // Burn Shares and Return Tokens
@@ -283,11 +308,12 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     function batch(uint256 batchAmount) external override {
         uint256 tokenBalance = vaultTokenBalance();
 
-        // Batch Amount is EQUAL or LESS than vault token balance
-        require(batchAmount <= tokenBalance, "Invalid Batch Amount");
+        // Pod has a float above 0
+        require(tokenBalance > 0, "Pod:zero-float-balance");
 
-        // Prize Pool Interface
-        // IPrizePoolMinimal _pool = IPrizePoolMinimal(_prizePool);
+        // Batch Amount is EQUAL or LESS than vault token float balance
+        // batchAmount can be below tokenBalance to keep float available t withdraw
+        require(batchAmount <= tokenBalance, "Pod:insufficient-float-balance");
 
         // Claim POOL drop backlog.
         uint256 poolAmount = claimPodPool();
@@ -323,7 +349,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
             address(_target) != address(token) ||
                 address(_target) != address(ticket) ||
                 address(_target) != address(pool),
-            "Unable to withdraw token/ticket/pool"
+            "Pod:invalid-target-token"
         );
 
         // Transfer Token
@@ -354,8 +380,14 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         override
         returns (uint256)
     {
+        // Get token<>tokenDrop mapping
+        require(
+            drops[_token] != TokenDrop(address(0)),
+            "Pod:invalid-token-drop"
+        );
+
         // Claim POOL rewards
-        uint256 _balance = drop.claim(user);
+        uint256 _balance = drops[_token].claim(user);
 
         emit Claimed(user, _balance);
 
@@ -453,7 +485,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @return uint256 pool exact withdraw amount
      */
     function _withdrawFromPool(uint256 _amount) internal returns (uint256) {
-        IPrizePoolMinimal _pool = IPrizePoolMinimal(_prizePool);
+        IPrizePool _pool = IPrizePool(_prizePool);
 
         // Calculate Early Exit Fee
         (uint256 exitFee, ) =
@@ -484,6 +516,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @dev Price per share for entire pod balances.
      */
     function getPricePerShare() external view override returns (uint256) {
+        // Check totalSupply to prevent SafeMath: division by zero
         if (totalSupply() > 0) {
             return balance().mul(1e18).div(totalSupply());
         } else {
@@ -499,6 +532,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         view
         returns (uint256)
     {
+        // Check totalSupply to prevent SafeMath: division by zero
         if (totalSupply() > 0) {
             return balanceOf(user).mul(1e18).div(balance());
         } else {

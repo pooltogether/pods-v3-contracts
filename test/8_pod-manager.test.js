@@ -66,6 +66,46 @@ describe("PodManager", function() {
       );
     });
 
+    it("should fail withdrawing non-core ERC20 target asset as EOA", async function() {
+      // USDC.transfer(pod, 1000)
+      await testing.USDC.transfer(
+        testing.pod.address,
+        utils.parseUnits("1000", 6)
+      );
+
+      expect(await testing.USDC.balanceOf(testing.pod.address)).to.equal(
+        utils.parseUnits("1000", 6)
+      );
+
+      // setManager()
+      await testing.pod.setManager(testing.owner.address);
+
+      // withdrawERC20()
+      expect(
+        testing.pod.withdrawERC20(config.tokens.POOL, utils.parseUnits("1000"))
+      ).to.be.revertedWith("Pod:invalid-target-token");
+    });
+
+    it("should succeed withdrawing non-core ERC20 target asset as EOA", async function() {
+      // USDC.transfer(pod, 1000)
+      await testing.USDC.transfer(
+        testing.pod.address,
+        utils.parseUnits("1000", 6)
+      );
+
+      expect(await testing.USDC.balanceOf(testing.pod.address)).to.equal(
+        utils.parseUnits("1000", 6)
+      );
+
+      await testing.pod.setManager(testing.owner.address);
+
+      // withdrawERC20()
+      await testing.pod.withdrawERC20(
+        config.tokens.USDC,
+        utils.parseUnits("1000", 6)
+      );
+    });
+
     // POD TokenDrop Core Settings
     it("should liquidate Pod assets and transfer liquidate assets", async function() {
       // USDC.transfer(pod, 1000)
@@ -96,6 +136,39 @@ describe("PodManager", function() {
   /************************************|
   | PodManager - ERC721 Liquidate
   /************************************/
+  describe("ERC721 Withdraw", function() {
+    before(async () => {});
+
+    beforeEach(async () => {
+      // Deploy PodNFT contract
+      testing.podNFT = await testing.POD_NFT.deploy("PodNFT", "POD");
+    });
+
+    // POD TokenDrop Core Settings
+    it("should withdraw ERC721 target asset as EOA", async function() {
+      // Transfer NFT to Pod
+      await testing.podNFT.transferFrom(
+        testing.owner.address,
+        testing.pod.address,
+        1
+      );
+
+      // Check Owner holds NFT
+      const tokenOwnerBeforeWithdraw = await testing.podNFT.ownerOf(1);
+      expect(tokenOwnerBeforeWithdraw).to.equal(testing.pod.address);
+
+      // setManager()
+      await testing.pod.setManager(testing.owner.address);
+
+      // withdrawCollectible() - Withdraw NFT from Pod
+      const liquidate = testing.pod.withdrawERC721(testing.podNFT.address, 1);
+
+      // Check Owner holds NFT
+      const tokenOwnerAfterWithdraw = await testing.podNFT.ownerOf(1);
+      expect(tokenOwnerAfterWithdraw).to.equal(testing.owner.address);
+    });
+  });
+
   describe("ERC721 Withdraw", function() {
     before(async () => {});
 
