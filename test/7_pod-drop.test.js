@@ -114,7 +114,7 @@ describe("Pod - Drops", function() {
 
   // Pod should always have 0 POOL without batch() called
   // ----------------------------------------------------------------
-  it("should handle multiple deposits", async function() {
+  it("should handle multiple deposits [ @skip-on-coverage ]", async function() {
     podPoolBalance = await testing.pool.balanceOf(testing.pod.address);
 
     // Check Balance
@@ -188,16 +188,6 @@ describe("Pod - Drops", function() {
           },
         ],
       });
-
-      // const [pod, tokenDrop] = await createPodAndTokenDrop(testing, config);
-      // testing.pod = await ethers.getContractAt("Pod", pod);
-      // testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDrop);
-
-      // // Set TokenDrop contract
-      // testing.drop = await ethers.getContractAt(
-      //   "TokenDrop",
-      //   await testing.pod.drop()
-      // );
     });
   });
 
@@ -241,7 +231,7 @@ describe("Pod - Drops", function() {
 
     // Pod should always have 0 POOL without batch() called
     // ----------------------------------------------------------------
-    it("should have 0 Pod POOL rewards before batch(", async function() {
+    it("should have 0 Pod POOL rewards before batch [ @skip-on-coverage ]", async function() {
       podPoolBalance = await testing.pool.balanceOf(testing.pod.address);
 
       // Check Balance
@@ -271,7 +261,7 @@ describe("Pod - Drops", function() {
 
     // Distribute POOL to single Account
     // ----------------------------------------------------------------
-    it("Pod should accumulate POOL rewards and allow single user to withdraw total allocation", async function() {
+    it("Pod should accumulate POOL rewards and allow single user to withdraw total allocation [ @skip-on-coverage ]", async function() {
       // token.approve(pod, balance)
       await testing.token.approve(
         testing.pod.address,
@@ -468,7 +458,7 @@ describe("Pod - Drops", function() {
 
     // Distribute POOL to multiple Accounts
     // ----------------------------------------------------------------
-    it("Pod should accumulate POOL rewards and multiple users to withdraw total allocation", async function() {
+    it("Pod should accumulate POOL rewards and multiple users to withdraw total allocation [ @skip-on-coverage ]", async function() {
       // token.approve(pod, owner.balance)
       await testing.token.approve(
         testing.pod.address,

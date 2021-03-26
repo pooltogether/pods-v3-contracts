@@ -1,11 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
-import "hardhat/console.sol";
-
-// External Interfaces
-// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 // Libraries
 import "./external/ProxyFactory.sol";
 
@@ -18,17 +13,17 @@ import "./TokenDrop.sol";
 
 contract PodFactory is ProxyFactory {
     /**
-     * @notice Contract template for deploying proxied Comptrollers
+     * @notice TokenDropFactory reference
      */
     TokenDropFactory public tokenDropFactory;
 
     /**
-     * @notice Contract template for deploying proxied Comptrollers
+     * @notice Contract template for deploying proxied Pods
      */
     Pod public podInstance;
 
     /**
-     * @notice Contract template for deploying proxied Comptrollers
+     * @notice Contract template for deploying proxied TokenDrop
      */
     TokenDrop public tokenDropInstance;
 
@@ -54,7 +49,6 @@ contract PodFactory is ProxyFactory {
 
     function create(
         address _prizePoolTarget,
-        address _token,
         address _ticket,
         address _pool,
         address _faucet,
@@ -66,14 +60,7 @@ contract PodFactory is ProxyFactory {
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
         // Pod Initialize
-        pod.initialize(
-            _prizePoolTarget,
-            _token,
-            _ticket,
-            _pool,
-            _faucet,
-            _manager
-        );
+        pod.initialize(_prizePoolTarget, _ticket, _pool, _faucet, _manager);
 
         // Update Owner
         pod.transferOwnership(msg.sender);

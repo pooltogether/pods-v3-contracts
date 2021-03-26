@@ -3,6 +3,7 @@ const { expect, assert } = require("chai");
 
 const debug = require("debug")("pod:PodEssentials.test");
 const { getConfig } = require("../lib/config");
+const { purchaseToken } = require("../lib/uniswap");
 const {
   setupSigners,
   createPodAndTokenDrop,
@@ -19,6 +20,18 @@ describe("Pod", function() {
     testing = await setupSigners(testing);
     testing = await setupContractFactories(testing);
     testing = await createPeripheryContract(testing, config);
+
+    // Acquire PrizePool Token
+    await purchaseToken(
+      config.tokens.WETH,
+      config.podDAI.token,
+      ethers.utils.parseEther("500"),
+      testing.owner.address,
+      {
+        UniswapRouter: config.contracts.UniswapRouter,
+        exactAmount: true,
+      }
+    );
   });
 
   /******************|
@@ -35,6 +48,7 @@ describe("Pod", function() {
   /******************/
   it("should have the correct name", async function() {
     const tName = await testing.token.name();
+
     // Pod Name
     const name = await testing.pod.name();
     expect(name).equal(`pPod ${tName}`);
@@ -85,19 +99,60 @@ describe("Pod", function() {
   });
 
   it("should have 0 getPricePerShare", async function() {
-    // getUserPricePerShare()
+    // getPricePerShare()
     const getPricePerShare = await testing.pod.getPricePerShare();
     expect(getPricePerShare).equal(utils.parseEther("0"));
-    assert.equal(getPricePerShare.toString(), utils.parseEther("0"));
   });
 
-  it("should have 0 UserPricePerShare", async function() {
-    debug("should have 0 UserPricePerShare...");
+  it("should have 1 getPricePerShare", async function() {
+    // approve()
+    await testing.token.approve(testing.pod.address, utils.parseEther("1000"));
+
+    // depositTo()
+    await testing.pod.depositTo(
+      testing.owner.address,
+      utils.parseEther("1000")
+    );
+
+    // totalSupply()
+    const totalSupply = await testing.pod.totalSupply();
+    expect(totalSupply).equal(utils.parseEther("1000"));
+
+    console.log(totalSupply.toString(), "totalSupply");
+
+    // getPricePerShare()
+    const getPricePerShare = await testing.pod.getPricePerShare();
+    expect(getPricePerShare).equal(utils.parseEther("1"));
+  });
+
+  it("should have 0 getUserPricePerShare", async function() {
     // getUserPricePerShare()
     const getUserPricePerShare = await testing.pod.getUserPricePerShare(
       testing.owner.address
     );
     expect(getUserPricePerShare).equal(utils.parseEther("0"));
-    assert.equal(getUserPricePerShare.toString(), utils.parseEther("0"));
+  });
+
+  it("should have 1 getUserPricePerShare", async function() {
+    // approve()
+    await testing.token.approve(testing.pod.address, utils.parseEther("1000"));
+
+    // depositTo()
+    await testing.pod.depositTo(
+      testing.owner.address,
+      utils.parseEther("1000")
+    );
+
+    // totalSupply()
+    const totalSupply = await testing.pod.totalSupply();
+    expect(totalSupply).equal(utils.parseEther("1000"));
+
+    console.log(totalSupply.toString(), "totalSupply");
+
+    // getUserPricePerShare()
+    const getUserPricePerShare = await testing.pod.getUserPricePerShare(
+      testing.owner.address
+    );
+    expect(getUserPricePerShare).equal(utils.parseEther("1"));
   });
 });
