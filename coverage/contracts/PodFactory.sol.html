@@ -124,7 +124,23 @@
 79
 80
 81
-82</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -166,17 +182,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<<<<<<< HEAD
-<span class="cline-any cline-yes">66×</span>
-=======
->>>>>>> main
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">120×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<<<<<<< HEAD
-<span class="cline-any cline-yes">66×</span>
-=======
->>>>>>> main
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">120×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -191,50 +209,32 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<<<<<<< HEAD
-<span class="cline-any cline-yes">44×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">44×</span>
-=======
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">83×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">83×</span>
->>>>>>> main
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">82×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">82×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">82×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">82×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">82×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">82×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<<<<<<< HEAD
-<span class="cline-any cline-yes">44×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">44×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">44×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">44×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">44×</span>
-=======
-<span class="cline-any cline-yes">82×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">82×</span>
->>>>>>> main
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
@@ -250,6 +250,12 @@ import "./TokenDropFactory.sol";
 import "./Pod.sol";
 import "./TokenDrop.sol";
 &nbsp;
+/**
+ * @title PodFactory (ProxyFactory) - Clones a Pod Instance
+ * @notice Reduces gas costs and collectively increases that chances winning for PoolTogether users, while keeping user POOL distributions to users.
+ * @dev The PodFactory creates/initializes connected Pod and TokenDrop smart contracts. Pods stores tokens, tickets, prizePool and other essential references.
+ * @author Kames Geraghty
+ */
 contract PodFactory is ProxyFactory {
     /**
      * @notice TokenDropFactory reference
@@ -277,7 +283,11 @@ contract PodFactory is ProxyFactory {
     /***********************************|
     |   Constructor                     |
     |__________________________________*/
-    /// @notice Initializes the Factory with an instance of the TokenFaucet
+    /**
+     * @notice Initializes the Pod Factory with an instance of the Pod and TokenDropFactory reference.
+     * @dev Initializes the Pod Factory with an instance of the Pod and TokenDropFactory reference.
+     * @param _tokenDropFactory Target PrizePool for deposits and withdraws
+     */
     constructor(TokenDropFactory _tokenDropFactory) {
         // Pod Instance
         podInstance = new Pod();
@@ -286,6 +296,16 @@ contract PodFactory is ProxyFactory {
         tokenDropFactory = _tokenDropFactory;
     }
 &nbsp;
+    /**
+     * @notice Create a new Pod Clone using the Pod instance.
+     * @dev The Pod Smart Contact is created and initialized using the PodFactory.
+     * @param _prizePoolTarget Target PrizePool for deposits and withdraws
+     * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
+     * @param _pool PoolTogether Goverance token - distributed for users with active deposits.
+     * @param _faucet TokenFaucet reference that distributes POOL token for deposits
+     * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
+     * @return (address, address) Pod and TokenDrop addresses
+     */
     function create(
         address _prizePoolTarget,
         address _ticket,
@@ -293,8 +313,6 @@ contract PodFactory is ProxyFactory {
         address _faucet,
         address _manager
     ) external returns (address, address) {
-        // SETUP Pod Smart Contract w/ Initial Configuration
-        // ---------------------------------------------------
         // Pod Deploy
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 &nbsp;
@@ -304,12 +322,10 @@ contract PodFactory is ProxyFactory {
         // Update Owner
         pod.transferOwnership(msg.sender);
 &nbsp;
-        // SETUP TokenDrop Smart Contract w/ Pod Configuration
-        // ---------------------------------------------------
         TokenDrop tokenDrop = tokenDropFactory.create(address(pod), _pool);
 &nbsp;
-        // TokenDrop Pod Initialize - Add Pod to TokenDrop
-        pod.setTokenDrop(address(tokenDrop));
+        // TokenDrop Pod Initialize - Add Pod.token() to TokenDrop
+        pod.setTokenDrop(address(pod.token()), address(tokenDrop));
 &nbsp;
         // Emit LogCreatedPodAndTokenDrop
         emit LogCreatedPodAndTokenDrop(address(pod), address(tokenDrop));
@@ -324,11 +340,7 @@ contract PodFactory is ProxyFactory {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-<<<<<<< HEAD
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 26 2021 13:23:52 GMT-0700 (Pacific Daylight Time)
-=======
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 26 2021 03:24:33 GMT-0700 (Pacific Daylight Time)
->>>>>>> main
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Mar 29 2021 01:25:56 GMT-0700 (Pacific Daylight Time)
 </div>
 </div>
 <script src="../prettify.js"></script>

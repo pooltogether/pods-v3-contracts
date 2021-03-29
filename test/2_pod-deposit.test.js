@@ -80,7 +80,7 @@ describe("Pod - Deposit", function() {
 
   it("should succeed when depositing twice and have equal deposits and shares", async function() {
     // approve()
-    await testing.token.approve(testing.pod.address, utils.parseEther("1000"));
+    await testing.token.approve(testing.pod.address, utils.parseEther("2000"));
 
     // depositTo()
     const depositTo = await testing.pod.depositTo(
@@ -109,24 +109,21 @@ describe("Pod - Deposit", function() {
 
     // depositTo()
     const depositToSecond = testing.pod.depositTo(
-      testing.alice.address,
+      testing.owner.address,
       utils.parseEther("1000")
     );
 
     // Event LogLiquidatedERC721
     await expect(depositToSecond)
-      .to.emit(testing.podManager, "Deposited")
+      .to.emit(testing.pod, "Deposited")
       .withArgs(
         testing.owner.address,
         utils.parseEther("1000"),
-        utils.parseEther("2000")
+        utils.parseEther("1000")
       );
 
     // depositTo()
-    const totalSupply = await testing.pod.totalSupply(
-      testing.alice.address,
-      utils.parseEther("1000")
-    );
+    const totalSupply = await testing.pod.totalSupply();
 
     expect(totalSupply).equal(utils.parseEther("2000"));
   });

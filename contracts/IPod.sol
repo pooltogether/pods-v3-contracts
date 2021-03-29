@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.7.0 <0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
@@ -34,18 +34,22 @@ interface IPod is IERC20Upgradeable {
 
     /// @notice Allows someone to batch deposit funds into the underlying prize pool.  This should be called periodically.
     /// @dev This function should deposit the float into the prize pool, and claim any POOL tokens and distribute to users (possibly via adaptation of Token Faucet)
-    function batch(uint256 batchAmount) external;
+    function batch(uint256 batchAmount) external returns (bool);
 
     /// @notice Allows the owner of the Pod or the asset manager to withdraw tokens from the Pod.
     /// @dev This function should disallow the withdrawal of tickets or POOL to prevent users from being rugged.
     /// @param token The ERC20 token to withdraw.  Must not be prize pool tickets or POOL tokens.
-    function withdrawERC20(IERC20 token, uint256 amount) external;
+    function withdrawERC20(IERC20Upgradeable token, uint256 amount)
+        external
+        returns (bool);
 
     /// @notice Allows the owner of the Pod or the asset manager to withdraw tokens from the Pod.
     /// @dev This is mainly for Loot Boxes; so Loot Boxes that are won can be transferred out.
     /// @param token The address of the ERC721 to withdraw
     /// @param tokenId The token id to withdraw
-    function withdrawERC721(IERC721 token, uint256 tokenId) external;
+    function withdrawERC721(IERC721 token, uint256 tokenId)
+        external
+        returns (bool);
 
     /// @notice Allows a user to claim POOL tokens for an address.  The user will be transferred their share of POOL tokens.
     function claim(address user, address token) external returns (uint256);

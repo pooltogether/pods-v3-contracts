@@ -138,10 +138,7 @@ describe("Pod - Withdraw", function() {
     expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
       "Transfer"
     );
-    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
-      "Transfer"
-    );
-    expect(testing.pod.interface.parseLog(receipt.logs[3]).name).to.equal(
+    expect(testing.pod.interface.parseLog(receipt.logs[16]).name).to.equal(
       "Withdrawl"
     );
   });

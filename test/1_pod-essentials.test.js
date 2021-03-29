@@ -51,7 +51,7 @@ describe("Pod", function() {
 
     // Pod Name
     const name = await testing.pod.name();
-    expect(name).equal(`pPod ${tName}`);
+    expect(name).equal(`Pod ${tName}`);
   });
 
   it("should have the correct symbol", async function() {
@@ -59,7 +59,7 @@ describe("Pod", function() {
 
     // Pod Symbol
     const symbol = await testing.pod.symbol();
-    expect(symbol).equal(`pp${tSymbol}`);
+    expect(symbol).equal(`p${tSymbol}`);
   });
 
   it("should have the correct prize pool", async function() {
@@ -118,8 +118,6 @@ describe("Pod", function() {
     const totalSupply = await testing.pod.totalSupply();
     expect(totalSupply).equal(utils.parseEther("1000"));
 
-    console.log(totalSupply.toString(), "totalSupply");
-
     // getPricePerShare()
     const getPricePerShare = await testing.pod.getPricePerShare();
     expect(getPricePerShare).equal(utils.parseEther("1"));
@@ -146,8 +144,6 @@ describe("Pod", function() {
     // totalSupply()
     const totalSupply = await testing.pod.totalSupply();
     expect(totalSupply).equal(utils.parseEther("1000"));
-
-    console.log(totalSupply.toString(), "totalSupply");
 
     // getUserPricePerShare()
     const getUserPricePerShare = await testing.pod.getUserPricePerShare(

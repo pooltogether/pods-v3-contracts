@@ -1,18 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
-import "hardhat/console.sol";
-
 // Libraries
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
+// Interfaces
 import "./IPod.sol";
 import "./IPodManager.sol";
-
 import "./interfaces/uniswap/IUniswapV2Router02.sol";
 
-contract PodManager is IPodManager, Ownable {
+/**
+ * @title PodManager Prototype (Ownable, IPodManager) - Liquidates a Pod non-core Assets
+ * @notice Manages the liqudiation of a Pods "bonus" winnings i.e. tokens earned from LOOT boxes and other unexpected assets transfered to the Pod
+ * @dev Liquidates non-core tokens (deposit token, PrizePool tickets and the POOL goverance) token for fair distribution Pod winners.
+ * @author Kames Geraghty
+ */
+contract PodManager is Ownable, IPodManager {
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
@@ -22,14 +27,14 @@ contract PodManager is IPodManager, Ownable {
     |   Constants                       |
     |__________________________________*/
     // Uniswap Router
-    IUniswapV2Router02 public UniswapRouter =
+    IUniswapV2Router02 public uniswapRouter =
         IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
     /***********************************|
     |   Events                          |
     |__________________________________*/
     /**
-     * @dev Log Emitted when PodManager liquidates LootBox ERC20
+     * @dev Log Emitted when PodManager liquidates a Pod ERC20 token
      */
     event LogLiquidatedERC20(
         address token,
@@ -38,29 +43,25 @@ contract PodManager is IPodManager, Ownable {
     );
 
     /**
-     * @dev Log Emitted when PodManager withdraws LootBox ERC721
+     * @dev Log Emitted when PodManager withdraws a Pod ERC20 token
      */
     event LogLiquidatedERC721(address token, uint256 tokenId);
 
     /***********************************|
-    |   Constructor                     |
-    |__________________________________*/
-
-    /**
-     * @dev Initialize the PodManager Smart Contact
-     */
-    constructor() {}
-
-    /***********************************|
-    |   Functions                       |
+    |   Public/External                 |
     |__________________________________*/
     /**
-     * @notice liquidate
-     * @return uint256 Amount liquidated
+     * @notice Liqudiates an ERC20 from a Pod by withdrawin the non-core token, executing a swap and returning the token.
+     * @dev Liqudiates an ERC20 from a Pod by withdrawin the non-core token, executing a swap and returning the token.
+     * @param _pod Pod reference
+     * @param target ERC20 token reference.
+     * @param amountIn Exact token amount transfered
+     * @param amountOutMin Minimum token receieved
+     * @param path Uniswap token path
      */
     function liquidate(
         address _pod,
-        IERC20 target,
+        IERC20Upgradeable target,
         uint256 amountIn,
         uint256 amountOutMin,
         address[] calldata path
@@ -71,10 +72,10 @@ contract PodManager is IPodManager, Ownable {
         pod.withdrawERC20(target, amountIn);
 
         // Approve Uniswap Router Swap
-        target.approve(address(UniswapRouter), amountIn);
+        target.approve(address(uniswapRouter), amountIn);
 
         // Swap Tokens and Send Winnings to PrizePool Pod
-        UniswapRouter.swapExactTokensForTokens(
+        uniswapRouter.swapExactTokensForTokens(
             amountIn,
             amountOutMin,
             path,

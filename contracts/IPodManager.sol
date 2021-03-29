@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 // Interface
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 interface IPodManager {
@@ -12,7 +12,7 @@ interface IPodManager {
      */
     function liquidate(
         address _pod,
-        IERC20 target,
+        IERC20Upgradeable target,
         uint256 amountIn,
         uint256 amountOutMin,
         address[] calldata path

@@ -105,16 +105,22 @@ describe("PodFactory", function() {
     testing.pod = testing.pod.connect(testing.alice);
 
     // setTokenDrop()
-    const setTokenDrop = testing.pod.setTokenDrop(constants.AddressZero);
+    const setTokenDrop = testing.pod.setTokenDrop(
+      testing.token.address,
+      constants.AddressZero
+    );
     // expect(setTokenDrop).equal(testing.podFactory.address);
     await expect(setTokenDrop).to.be.revertedWith(
       "Pod:unauthorized-set-token-drop"
     );
   });
 
-  it("should succedd when setting token drop reference from not authorized account", async function() {
+  it("should succeed when setting token drop reference from an authorized account", async function() {
     // setTokenDrop()
-    await testing.pod.setTokenDrop(constants.AddressZero);
+    await testing.pod.setTokenDrop(
+      constants.AddressZero,
+      constants.AddressZero
+    );
 
     // drop()
     const drop = await testing.pod.drop();

@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
-import "hardhat/console.sol";
-
-// External Interfaces
-
 // Libraries
 import "./external/ProxyFactory.sol";
 
@@ -12,28 +8,30 @@ import "./external/ProxyFactory.sol";
 import "./Pod.sol";
 import "./TokenDrop.sol";
 
+/**
+ * @title TokenDropFactory (ProxyFactory) - Clones a TokenDrop Instance
+ * @notice Create a TokenDrop smart contract, which is associated with Pod smart contract for distribution of an asset token (i.e. POOL).
+ * @dev The PodFactory creates/initializes TokenDrop smart contract. The factory will generally be called from the PodFactory smart contract directly.
+ * @author Kames Geraghty
+ */
 contract TokenDropFactory is ProxyFactory {
+    /***********************************|
+    |   Constants                       |
+    |__________________________________*/
     /**
      * @notice Contract template for deploying proxied Comptrollers
      */
     TokenDrop public tokenDropInstance;
 
     /***********************************|
-    |   Events                          |
-    |__________________________________*/
-    /**
-     * @dev Emitted when use deposits into batch backlog
-     */
-    event LogCreateTokenDrop(address tokenDrop);
-
-    /***********************************|
     |   Constructor                     |
     |__________________________________*/
     /**
-     * @notice Initializes the Factory with an instance of the TokenFaucet
+     * @notice Initializes the TokenDropFactory.
+     * @dev Initializes the Factory with a TokenDrop instance.
      */
     constructor() {
-        // TokenDrpp Instance
+        // TokenDrop Instance
         tokenDropInstance = new TokenDrop();
     }
 
@@ -50,9 +48,6 @@ contract TokenDropFactory is ProxyFactory {
 
         // TokenDrop Initialize
         tokenDrop.initialize(_measure, _asset);
-
-        // Emit LogCreate
-        emit LogCreateTokenDrop(address(tokenDrop));
 
         // Return TokenDrop addresses
         return tokenDrop;

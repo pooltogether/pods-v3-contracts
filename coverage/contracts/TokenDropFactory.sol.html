@@ -22,7 +22,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>5/5</span>
+        <span class='fraction'>4/4</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -30,14 +30,14 @@
         <span class='fraction'>0/0</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">50% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>2/2</span>
+        <span class='fraction'>1/2</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">75% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>5/5</span>
+        <span class='fraction'>3/4</span>
       </div>
     </div>
   </div>
@@ -98,12 +98,7 @@
 53
 54
 55
-56
-57
-58
-59
-60
-61</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+56</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -137,37 +132,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<<<<<<< HEAD
-<span class="cline-any cline-yes">66×</span>
-=======
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">120×</span>
->>>>>>> main
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<<<<<<< HEAD
-<span class="cline-any cline-yes">48×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">48×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">48×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">48×</span>
-=======
-<span class="cline-any cline-yes">86×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -175,18 +151,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">86×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">86×</span>
->>>>>>> main
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
 pragma solidity &gt;=0.7.0 &lt;0.8.0;
-&nbsp;
-import "hardhat/console.sol";
-&nbsp;
-// External Interfaces
 &nbsp;
 // Libraries
 import "./external/ProxyFactory.sol";
@@ -195,28 +163,30 @@ import "./external/ProxyFactory.sol";
 import "./Pod.sol";
 import "./TokenDrop.sol";
 &nbsp;
+/**
+ * @title TokenDropFactory (ProxyFactory) - Clones a TokenDrop Instance
+ * @notice Create a TokenDrop smart contract, which is associated with Pod smart contract for distribution of an asset token (i.e. POOL).
+ * @dev The PodFactory creates/initializes TokenDrop smart contract. The factory will generally be called from the PodFactory smart contract directly.
+ * @author Kames Geraghty
+ */
 contract TokenDropFactory is ProxyFactory {
+    /***********************************|
+    |   Constants                       |
+    |__________________________________*/
     /**
      * @notice Contract template for deploying proxied Comptrollers
      */
     TokenDrop public tokenDropInstance;
 &nbsp;
     /***********************************|
-    |   Events                          |
-    |__________________________________*/
-    /**
-     * @dev Emitted when use deposits into batch backlog
-     */
-    event LogCreateTokenDrop(address tokenDrop);
-&nbsp;
-    /***********************************|
     |   Constructor                     |
     |__________________________________*/
     /**
-     * @notice Initializes the Factory with an instance of the TokenFaucet
+     * @notice Initializes the TokenDropFactory.
+     * @dev Initializes the Factory with a TokenDrop instance.
      */
-    constructor() {
-        // TokenDrpp Instance
+<span class="fstat-no" title="function not covered" >    constructor() {</span>
+        // TokenDrop Instance
         tokenDropInstance = new TokenDrop();
     }
 &nbsp;
@@ -234,9 +204,6 @@ contract TokenDropFactory is ProxyFactory {
         // TokenDrop Initialize
         tokenDrop.initialize(_measure, _asset);
 &nbsp;
-        // Emit LogCreate
-        emit LogCreateTokenDrop(address(tokenDrop));
-&nbsp;
         // Return TokenDrop addresses
         return tokenDrop;
     }
@@ -247,11 +214,7 @@ contract TokenDropFactory is ProxyFactory {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-<<<<<<< HEAD
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 26 2021 13:23:52 GMT-0700 (Pacific Daylight Time)
-=======
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 26 2021 03:24:33 GMT-0700 (Pacific Daylight Time)
->>>>>>> main
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Mar 29 2021 01:25:56 GMT-0700 (Pacific Daylight Time)
 </div>
 </div>
 <script src="../prettify.js"></script>

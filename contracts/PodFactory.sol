@@ -11,6 +11,12 @@ import "./TokenDropFactory.sol";
 import "./Pod.sol";
 import "./TokenDrop.sol";
 
+/**
+ * @title PodFactory (ProxyFactory) - Clones a Pod Instance
+ * @notice Reduces gas costs and collectively increases that chances winning for PoolTogether users, while keeping user POOL distributions to users.
+ * @dev The PodFactory creates/initializes connected Pod and TokenDrop smart contracts. Pods stores tokens, tickets, prizePool and other essential references.
+ * @author Kames Geraghty
+ */
 contract PodFactory is ProxyFactory {
     /**
      * @notice TokenDropFactory reference
@@ -38,7 +44,11 @@ contract PodFactory is ProxyFactory {
     /***********************************|
     |   Constructor                     |
     |__________________________________*/
-    /// @notice Initializes the Factory with an instance of the TokenFaucet
+    /**
+     * @notice Initializes the Pod Factory with an instance of the Pod and TokenDropFactory reference.
+     * @dev Initializes the Pod Factory with an instance of the Pod and TokenDropFactory reference.
+     * @param _tokenDropFactory Target PrizePool for deposits and withdraws
+     */
     constructor(TokenDropFactory _tokenDropFactory) {
         // Pod Instance
         podInstance = new Pod();
@@ -47,6 +57,16 @@ contract PodFactory is ProxyFactory {
         tokenDropFactory = _tokenDropFactory;
     }
 
+    /**
+     * @notice Create a new Pod Clone using the Pod instance.
+     * @dev The Pod Smart Contact is created and initialized using the PodFactory.
+     * @param _prizePoolTarget Target PrizePool for deposits and withdraws
+     * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
+     * @param _pool PoolTogether Goverance token - distributed for users with active deposits.
+     * @param _faucet TokenFaucet reference that distributes POOL token for deposits
+     * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
+     * @return (address, address) Pod and TokenDrop addresses
+     */
     function create(
         address _prizePoolTarget,
         address _ticket,
@@ -54,8 +74,6 @@ contract PodFactory is ProxyFactory {
         address _faucet,
         address _manager
     ) external returns (address, address) {
-        // SETUP Pod Smart Contract w/ Initial Configuration
-        // ---------------------------------------------------
         // Pod Deploy
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
@@ -65,12 +83,10 @@ contract PodFactory is ProxyFactory {
         // Update Owner
         pod.transferOwnership(msg.sender);
 
-        // SETUP TokenDrop Smart Contract w/ Pod Configuration
-        // ---------------------------------------------------
         TokenDrop tokenDrop = tokenDropFactory.create(address(pod), _pool);
 
-        // TokenDrop Pod Initialize - Add Pod to TokenDrop
-        pod.setTokenDrop(address(tokenDrop));
+        // TokenDrop Pod Initialize - Add Pod.token() to TokenDrop
+        pod.setTokenDrop(address(pod.token()), address(tokenDrop));
 
         // Emit LogCreatedPodAndTokenDrop
         emit LogCreatedPodAndTokenDrop(address(pod), address(tokenDrop));

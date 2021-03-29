@@ -66,12 +66,8 @@ describe("TokenDropFactory", function() {
     let eventProxyCreated = testing.tokenDropFactory.interface.parseLog(
       receipt.logs[0]
     );
-    let eventLogCreateTokenDrop = testing.tokenDropFactory.interface.parseLog(
-      receipt.logs[1]
-    );
 
     // Check Events
     expect(eventProxyCreated.name).to.equal("ProxyCreated");
-    expect(eventLogCreateTokenDrop.name).to.equal("LogCreateTokenDrop");
   });
 });

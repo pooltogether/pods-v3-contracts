@@ -11,16 +11,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@pooltogether/fixed-point/contracts/FixedPoint.sol";
 
 // Local Interfaces
-import "./interfaces/TokenListenerInterface.sol";
+// import "./interfaces/TokenListenerInterface.sol";
 
 // Local Libraries
 import "./libraries/ExtendedSafeCast.sol";
 
 /**
- * @title TokenDrop
+ * @title TokenDrop - Calculates Asset Distribution using Measure Token
+ * @notice Calculates distribution of POOL rewards for users deposting into PoolTogether PrizePools using the Pod smart contract.
+ * @dev A simplified version of the PoolTogether TokenFaucet that simplifies an asset token distribution using totalSupply calculations.
  * @author Kames Cox-Geraghty
- * @notice Manage POOL Token Dripping
- * @dev Calculate an account rewards based of active deposits
  */
 contract TokenDrop is Initializable {
     /***********************************|
@@ -30,7 +30,7 @@ contract TokenDrop is Initializable {
     using ExtendedSafeCast for uint256;
 
     /***********************************|
-    |   Libraries                       |
+    |   Constants                       |
     |__________________________________*/
     /// @notice The token that is being disbursed
     IERC20Upgradeable public asset;
@@ -85,14 +85,6 @@ contract TokenDrop is Initializable {
         // Set Factory Deployer
         factory = msg.sender;
     }
-
-    /**
-     * @notice Add Pod reference to TokenDrop Smart Contract
-     */
-    // function initializePod(address _measure) external {
-    //     require(msg.sender == factory, "Pod: Unauthorized PodDrop Factory");
-    //     measure = IERC20Upgradeable(_measure);
-    // }
 
     /***********************************|
     |   Public/External                 |
