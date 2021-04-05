@@ -266,6 +266,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     function depositTo(address to, uint256 tokenAmount)
         external
         override
+        pauseDepositsDuringAwarding
         returns (uint256)
     {
         require(tokenAmount > 0, "Pod:invalid-amount");
