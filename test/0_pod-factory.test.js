@@ -107,7 +107,6 @@ describe("PodFactory", function() {
     // setTokenDrop()
     const setTokenDrop = testing.pod.setTokenDrop(
       testing.token.address,
-      constants.AddressZero
     );
     // expect(setTokenDrop).equal(testing.podFactory.address);
     await expect(setTokenDrop).to.be.revertedWith(
@@ -119,7 +118,6 @@ describe("PodFactory", function() {
     // setTokenDrop()
     await testing.pod.setTokenDrop(
       constants.AddressZero,
-      constants.AddressZero
     );
 
     // drop()

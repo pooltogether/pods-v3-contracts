@@ -52,5 +52,5 @@ interface IPod is IERC20Upgradeable {
         returns (bool);
 
     /// @notice Allows a user to claim POOL tokens for an address.  The user will be transferred their share of POOL tokens.
-    function claim(address user, address token) external returns (uint256);
+    function claim(address user) external returns (uint256);
 }

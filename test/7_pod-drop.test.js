@@ -159,7 +159,6 @@ describe("Pod - Drops", function() {
     // User Claim POOL allocation
     const claimOwnerStatic = await testing.pod.callStatic.claim(
       testing.owner.address,
-      testing.owner.address
     );
 
     // Check Call Value
@@ -331,11 +330,9 @@ describe("Pod - Drops", function() {
       // User Claim POOL allocation
       const claimOwnerStatic = await testing.pod.callStatic.claim(
         testing.owner.address,
-        testing.owner.address
       );
       const claimOwner = await testing.pod.claim(
         testing.owner.address,
-        testing.owner.address
       );
 
       // Transaction Receipt
@@ -369,7 +366,7 @@ describe("Pod - Drops", function() {
       ).to.equalish(utils.parseEther("44"), utils.parseEther("1"));
 
       // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address, testing.owner.address);
+      await testing.pod.claim(testing.owner.address);
 
       expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
         utils.parseEther("88"),
@@ -408,7 +405,7 @@ describe("Pod - Drops", function() {
       ).to.equalish(utils.parseEther("44"), utils.parseEther("1"));
 
       // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address, testing.owner.address);
+      await testing.pod.claim(testing.owner.address);
 
       expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
         utils.parseEther("177"),
@@ -428,7 +425,7 @@ describe("Pod - Drops", function() {
       ).to.equalish(utils.parseEther("22"), utils.parseEther("3"));
 
       // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address, testing.owner.address);
+      await testing.pod.claim(testing.owner.address);
 
       expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
         utils.parseEther("199"),
@@ -448,7 +445,7 @@ describe("Pod - Drops", function() {
       ).to.equalish(utils.parseEther("0"), utils.parseEther("1"));
 
       // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address, testing.owner.address);
+      await testing.pod.claim(testing.owner.address);
 
       expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
         utils.parseEther("195"),
@@ -512,7 +509,7 @@ describe("Pod - Drops", function() {
       // ------------------------------
       // Alice Claim POOL allocation
       testing.pod = testing.pod.connect(testing.alice);
-      await testing.pod.claim(testing.alice.address, testing.alice.address);
+      await testing.pod.claim(testing.alice.address);
 
       expect(await testing.pool.balanceOf(testing.alice.address)).to.equalish(
         utils.parseEther("22"),
@@ -523,7 +520,7 @@ describe("Pod - Drops", function() {
       // ------------------------------
       // Bob Claim POOL allocation
       testing.pod = testing.pod.connect(testing.bob);
-      await testing.pod.claim(testing.bob.address, testing.bob.address);
+      await testing.pod.claim(testing.bob.address);
 
       expect(await testing.pool.balanceOf(testing.bob.address)).to.equalish(
         utils.parseEther("22"),

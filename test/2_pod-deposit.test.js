@@ -63,12 +63,17 @@ describe("Pod - Deposit", function() {
     // getTransactionReceipt(depositTo.hash)
     let receipt = await provider.getTransactionReceipt(depositTo.hash);
 
+    console.log(testing.pod.interface.parseLog(receipt.logs[0]).name)
+    console.log(testing.pod.interface.parseLog(receipt.logs[1]).name)
+    console.log(testing.pod.interface.parseLog(receipt.logs[2]).name)
+    console.log(testing.pod.interface.parseLog(receipt.logs[3]).name)
+
     // Check All Events
     expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
-      "DripCalculate"
+      "Transfer"
     );
     expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
-      "Transfer"
+      "DripCalculate"
     );
     expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
       "Transfer"
@@ -93,10 +98,10 @@ describe("Pod - Deposit", function() {
 
     // Check All Events
     expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
-      "DripCalculate"
+      "Transfer"
     );
     expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
-      "Transfer"
+      "DripCalculate"
     );
     expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
       "Transfer"

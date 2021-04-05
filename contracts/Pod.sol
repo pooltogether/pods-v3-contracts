@@ -55,15 +55,6 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     // Factory
     address public factory;
 
-    /**
-     * @dev Pods can include token drops for multiple assets and not just the standard POOL.
-     * Generally a Pod will only inlude a TokenDrop for POOL, but it's possible that a Pod
-     * may add additional TokenDrops in the future. The Pod includes a `claimPodPool` method
-     * to claim POOL, but other TokenDrops would require an external method for adding an
-     * "asset" token to the TokenDrop smart contract, before calling the `claim` method.
-     */
-    mapping(address => TokenDrop) public drops;
-
     /***********************************|
     |   Events                          |
     |__________________________________*/
@@ -408,22 +399,11 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @notice Allows a user to claim POOL tokens for an address.  The user will be transferred their share of POOL tokens.
      * @dev Allows a user to claim POOL tokens for an address.  The user will be transferred their share of POOL tokens.
      * @param user User account
-     * @param _token The target token
      * @return uint256 Amount claimed.
      */
-    function claim(address user, address _token)
-        external
-        override
-        returns (uint256)
-    {
-        // Get token<>tokenDrop mapping
-        require(
-            drops[_token] != TokenDrop(address(0)),
-            "Pod:invalid-token-drop"
-        );
-
+    function claim(address user) external override returns (uint256) {
         // Claim POOL rewards
-        uint256 _balance = drops[_token].claim(user);
+        uint256 _balance = drop.claim(user);
 
         emit Claimed(user, _balance);
 
@@ -451,30 +431,17 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     /**
      * @notice Setup TokenDrop reference
      * @dev Initialize the Pod Smart Contact
-     * @param _token IERC20Upgradeable
      * @param _tokenDrop TokenDrop address
      * @return bool true
      */
-    function setTokenDrop(address _token, address _tokenDrop)
-        external
-        returns (bool)
-    {
+    function setTokenDrop(address _tokenDrop) external returns (bool) {
         require(
             msg.sender == factory || msg.sender == owner(),
             "Pod:unauthorized-set-token-drop"
         );
 
-        // Check if target<>tokenDrop mapping exists
-        require(
-            drops[_token] == TokenDrop(0),
-            "Pod:target-tokendrop-mapping-exists"
-        );
-
         // Set TokenDrop Referance
         drop = TokenDrop(_tokenDrop);
-
-        // Set target<>tokenDrop mapping
-        drops[_token] = drop;
 
         return true;
     }
