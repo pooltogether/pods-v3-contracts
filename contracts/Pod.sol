@@ -484,8 +484,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     |__________________________________*/
 
     /**
-     * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amoint.
-     * @param user User's address.
+     * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amount.
      * @param amount Amount of "token" deposited into the Pod.
      * @return uint256 The share allocation amount.
      */
