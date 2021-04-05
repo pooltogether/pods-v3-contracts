@@ -271,7 +271,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         require(tokenAmount > 0, "Pod:invalid-amount");
 
         // Allocate Shares from Deposit To Amount
-        uint256 shares = _deposit(to, tokenAmount);
+        uint256 shares = _calculateAllocation(tokenAmount);
 
         // Transfer Token Transfer Message Sender
         IERC20Upgradeable(token).safeTransferFrom(
@@ -279,6 +279,9 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
             address(this),
             tokenAmount
         );
+
+        // Mint User Shares
+        _mint(to, shares);
 
         // Emit Deposited
         emit Deposited(to, tokenAmount, shares);
@@ -486,7 +489,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @param amount Amount of "token" deposited into the Pod.
      * @return uint256 The share allocation amount.
      */
-    function _deposit(address user, uint256 amount) internal returns (uint256) {
+    function _calculateAllocation(uint256 amount) internal returns (uint256) {
         uint256 allocation = 0;
 
         // Calculate Allocation
@@ -495,9 +498,6 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         } else {
             allocation = (amount.mul(totalSupply())).div(balance());
         }
-
-        // Mint User Shares
-        _mint(user, allocation);
 
         // Return Allocation Amount
         return allocation;
