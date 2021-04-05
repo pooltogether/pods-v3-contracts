@@ -77,7 +77,7 @@ contract TokenDrop is Initializable {
     /**
      * @notice Initialize TokenDrop Smart Contract
      */
-    function initialize(address _measure, address _asset) external {
+    function initialize(address _measure, address _asset) external initializer {
         measure = IERC20Upgradeable(_measure);
         asset = IERC20Upgradeable(_asset);
 
