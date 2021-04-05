@@ -5,6 +5,7 @@ pragma solidity >=0.7.0 <0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
 // Interfaces
 import "./IPod.sol";
@@ -22,6 +23,7 @@ contract PodManager is Ownable, IPodManager {
     |   Libraries                       |
     |__________________________________*/
     using SafeMath for uint256;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /***********************************|
     |   Constants                       |
@@ -104,7 +106,7 @@ contract PodManager is Ownable, IPodManager {
         pod.withdrawERC721(target, tokenId);
 
         // Transfer Collectible to Owner
-        target.transferFrom(address(this), owner(), tokenId);
+        target.safeTransferFrom(address(this), owner(), tokenId);
 
         // Emit LogLiquidatedERC721
         emit LogLiquidatedERC721(address(target), tokenId);

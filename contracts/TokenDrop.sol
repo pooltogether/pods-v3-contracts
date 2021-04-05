@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
-// External Interfaces
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-
 // External Libraries
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@pooltogether/fixed-point/contracts/FixedPoint.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
-// Local Interfaces
-// import "./interfaces/TokenListenerInterface.sol";
+// External Interfaces
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 // Local Libraries
 import "./libraries/ExtendedSafeCast.sol";
@@ -28,6 +26,7 @@ contract TokenDrop is Initializable {
     |__________________________________*/
     using SafeMath for uint256;
     using ExtendedSafeCast for uint256;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /***********************************|
     |   Constants                       |
@@ -122,7 +121,7 @@ contract TokenDrop is Initializable {
      */
     function addAssetToken(uint256 amount) external returns (bool) {
         // Transfer asset/reward token from msg.sender to TokenDrop
-        asset.transferFrom(msg.sender, address(this), amount);
+        asset.safeTransferFrom(msg.sender, address(this), amount);
 
         // Update TokenDrop asset balance
         drop();
@@ -144,7 +143,7 @@ contract TokenDrop is Initializable {
         totalUnclaimed = uint256(totalUnclaimed).sub(balance).toUint112();
 
         // Transfer asset/reward token to user
-        asset.transfer(user, balance);
+        asset.safeTransfer(user, balance);
 
         // Emit Claimed
         emit Claimed(user, balance);

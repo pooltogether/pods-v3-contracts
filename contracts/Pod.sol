@@ -4,14 +4,12 @@ pragma solidity >=0.7.0 <0.8.0;
 // Libraries
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
-// External Interfaces
+// Module Interfaces
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-
-// Ineritance
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 // Internal Interfaces
@@ -35,6 +33,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     |   Libraries                       |
     |__________________________________*/
     using SafeMath for uint256;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /***********************************|
     |   Constants                       |
@@ -275,7 +274,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         uint256 shares = _deposit(to, tokenAmount);
 
         // Transfer Token Transfer Message Sender
-        IERC20Upgradeable(token).transferFrom(
+        IERC20Upgradeable(token).safeTransferFrom(
             msg.sender,
             address(this),
             tokenAmount
@@ -370,7 +369,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         );
 
         // Transfer Token
-        _target.transfer(msg.sender, amount);
+        _target.safeTransfer(msg.sender, amount);
 
         emit ERC20Withdrawn(address(_target), amount);
 
@@ -533,7 +532,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         }
 
         // Transfer Deposit Token to Message Sender
-        _token.transfer(msg.sender, amount);
+        _token.safeTransfer(msg.sender, amount);
 
         // Return Token Withdrawl Amount
         return amount;
