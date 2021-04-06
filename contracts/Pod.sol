@@ -68,7 +68,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     /**
      * @dev Emitted when user withdraws
      */
-    event Withdrawl(address user, uint256 amount, uint256 shares);
+    event Withdrawal(address user, uint256 amount, uint256 shares);
 
     /**
      * @dev Emitted when batch deposit is executed
@@ -311,8 +311,8 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         // Transfer Deposit Token to Message Sender
         token.safeTransfer(msg.sender, tokensReturned);
 
-        // Emit Withdrawl
-        emit Withdrawl(msg.sender, tokensReturned, shareAmount);
+        // Emit Withdrawal
+        emit Withdrawal(msg.sender, tokensReturned, shareAmount);
 
         return tokensReturned;
     }
@@ -502,19 +502,19 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         // Check balance
         uint256 currentBalance = token.balanceOf(address(this));
 
-        // Withdrawl Exceeds Current Token Balance
+        // Withdrawal Exceeds Current Token Balance
         if (amount > currentBalance) {
-            // Calculate Withdrawl Amount
+            // Calculate Withdrawal Amount
             uint256 withdraw = amount.sub(currentBalance);
 
             // Withdraw from Prize Pool
             uint256 exitFee = _withdrawFromPool(withdraw, maxFee);
 
-            // Add Exit Fee to Withdrawl Amount
+            // Add Exit Fee to Withdrawal Amount
             amount = amount.sub(exitFee);
         }
 
-        // Return Token Withdrawl Amount
+        // Return Token Withdrawal Amount
         return amount;
     }
 
