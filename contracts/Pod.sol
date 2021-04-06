@@ -229,7 +229,10 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         returns (bool)
     {
         // Require Valid Address
-        require(address(manager) != address(0), "Pod:invalid-manager-address");
+        require(
+            address(newManager) != address(0),
+            "Pod:invalid-manager-address"
+        );
 
         // Emit ManagementTransferred
         emit ManagementTransferred(address(manager), address(newManager));
