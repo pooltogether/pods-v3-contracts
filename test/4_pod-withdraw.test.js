@@ -45,8 +45,13 @@ describe("Pod - Withdraw", function() {
   });
 
   it("should fail when account is withdrawing with 0 shares", async function() {
+    // callStatic.getEarlyExitFee()
+    const getEarlyExitFee = await testing.pod.callStatic.getEarlyExitFee(
+      utils.parseEther("0")
+    );
+
     await expect(
-      testing.pod.withdraw(utils.parseEther("0"))
+      testing.pod.withdraw(utils.parseEther("0"), getEarlyExitFee)
     ).to.be.revertedWith("SafeMath: division by zero");
   });
 
@@ -57,8 +62,12 @@ describe("Pod - Withdraw", function() {
     // depositTo()
     await testing.pod.depositTo(testing.alice.address, utils.parseEther("999"));
 
+    const getEarlyExitFee = await testing.pod.callStatic.getEarlyExitFee(
+      utils.parseEther("999")
+    );
+
     await expect(
-      testing.pod.withdraw(utils.parseEther("1000"))
+      testing.pod.withdraw(utils.parseEther("1000"), getEarlyExitFee)
     ).to.be.revertedWith("Pod:insufficient-shares");
   });
 
@@ -77,7 +86,11 @@ describe("Pod - Withdraw", function() {
 
     expect(balanceOf).to.equal(toWei("1000"));
 
-    const withdraw = await testing.pod.withdraw(utils.parseEther("1000"));
+    const getEarlyExitFee = await testing.pod.callStatic.getEarlyExitFee(
+      utils.parseEther("1000")
+    );
+
+    const withdraw = await testing.pod.withdraw(utils.parseEther("1000"), getEarlyExitFee);
 
     // getTransactionReceipt(depositTo.hash)
     let receipt = await provider.getTransactionReceipt(withdraw.hash);
@@ -114,19 +127,34 @@ describe("Pod - Withdraw", function() {
     let receiptBatch = await provider.getTransactionReceipt(batch.hash);
 
     // Check Pod Specific Events
-    // expect(testing.pod.interface.parseLog(receiptBatch.logs[6]).name).to.equal(
-    //   "PodClaimed"
-    // );
-    // expect(testing.pod.interface.parseLog(receiptBatch.logs[18]).name).to.equal(
-    //   "Batch"
-    // );
+    expect(testing.pod.interface.parseLog(receiptBatch.logs[6]).name).to.equal(
+      "PodClaimed"
+    );
+    expect(testing.pod.interface.parseLog(receiptBatch.logs[18]).name).to.equal(
+      "Batch"
+    );
 
     // balanceOf()
     const balanceOf = await testing.pod.balanceOf(testing.owner.address);
 
     expect(balanceOf).to.equal(toWei("1000"));
 
-    const withdraw = await testing.pod.withdraw(utils.parseEther("1000"));
+    // Advance 1 Week
+    await advanceTimeAndBlock(604800);
+
+    const getEarlyExitFee = await testing.pod.callStatic.getEarlyExitFee(
+      utils.parseEther("1000")
+    );
+
+    // Expect Exit Fee to be in small range close to 3 deposit tokens.
+    expect(
+      await testing.pod.callStatic.getEarlyExitFee(
+        utils.parseEther("1000")
+      )
+    ).to.equalish(utils.parseEther("3"), utils.parseEther("0.02"));
+    
+    // withdraw()
+    const withdraw = await testing.pod.withdraw(utils.parseEther("1000"), getEarlyExitFee);
 
     // getTransactionReceipt(depositTo.hash)
     let receipt = await provider.getTransactionReceipt(withdraw.hash);

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
+import "hardhat/console.sol";
+
 // Libraries
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -285,9 +287,14 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @notice Withdraws a users share of the prize pool.
      * @dev The function should first withdraw from the 'float'; i.e. the funds that have not yet been deposited.
      * @param shareAmount The number of Pod shares to redeem.
+     * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return The actual amount of tokens that were transferred to the user.  This is the same as the deposit token.
      */
-    function withdraw(uint256 shareAmount) external override returns (uint256) {
+    function withdraw(uint256 shareAmount, uint256 maxFee)
+        external
+        override
+        returns (uint256)
+    {
         // Check User Balance
         require(
             balanceOf(msg.sender) >= shareAmount,
@@ -295,12 +302,16 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         );
 
         // Burn Shares and Return Tokens
-        uint256 tokens = _burnShares(shareAmount);
+        uint256 tokensReturned =
+            _burnSharesAndGetTokensReturned(shareAmount, maxFee);
+
+        // Transfer Deposit Token to Message Sender
+        token.safeTransfer(msg.sender, tokensReturned);
 
         // Emit Withdrawl
-        emit Withdrawl(msg.sender, tokens, shareAmount);
+        emit Withdrawl(msg.sender, tokensReturned, shareAmount);
 
-        return tokens;
+        return tokensReturned;
     }
 
     /**
@@ -472,9 +483,13 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     /**
      * @dev The internal function for the public withdraw function, which calculates a user's token allocation from burned shares.
      * @param shares Amount of "token" deposited into the Pod.
+     * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return uint256 The token amount returned for the burned shares.
      */
-    function _burnShares(uint256 shares) internal returns (uint256) {
+    function _burnSharesAndGetTokensReturned(uint256 shares, uint256 maxFee)
+        internal
+        returns (uint256)
+    {
         // Calculate Percentage Returned from Burned Shares
         uint256 amount = (balance().mul(shares)).div(totalSupply());
 
@@ -482,23 +497,19 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         _burn(msg.sender, shares);
 
         // Check balance
-        IERC20Upgradeable _token = IERC20Upgradeable(token);
-        uint256 currentBalance = _token.balanceOf(address(this));
+        uint256 currentBalance = token.balanceOf(address(this));
 
         // Withdrawl Exceeds Current Token Balance
         if (amount > currentBalance) {
             // Calculate Withdrawl Amount
-            uint256 _withdraw = amount.sub(currentBalance);
+            uint256 withdraw = amount.sub(currentBalance);
 
             // Withdraw from Prize Pool
-            uint256 exitFee = _withdrawFromPool(_withdraw);
+            uint256 exitFee = _withdrawFromPool(withdraw, maxFee);
 
             // Add Exit Fee to Withdrawl Amount
             amount = amount.sub(exitFee);
         }
-
-        // Transfer Deposit Token to Message Sender
-        _token.safeTransfer(msg.sender, amount);
 
         // Return Token Withdrawl Amount
         return amount;
@@ -506,25 +517,30 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
 
     /**
      * @dev Withdraws from Pod prizePool if the float balance can cover the total withdraw amount.
-     * @param _amount Amount of tokens to withdraw in exchange for the tickets transfered.
+     * @param amount Amount of tokens to withdraw in exchange for the tickets transfered.
+     * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return uint256 The exit fee paid for withdraw from the prizePool instant withdraw method.
      */
-    function _withdrawFromPool(uint256 _amount) internal returns (uint256) {
-        IPrizePool _pool = IPrizePool(_prizePool);
-
+    function _withdrawFromPool(uint256 amount, uint256 maxFee)
+        internal
+        returns (uint256)
+    {
         // Calculate Early Exit Fee
         (uint256 exitFee, ) =
-            _pool.calculateEarlyExitFee(
+            _prizePool.calculateEarlyExitFee(
                 address(this),
                 address(ticket),
-                _amount
+                amount
             );
+
+        // Check Exit Fee Does Not exceed maxFee set by user withdrawing.
+        require(exitFee <= maxFee, "Pod:exit-fee-exceeds-max-fee");
 
         // Withdraw from Prize Pool
         uint256 exitFeePaid =
-            _pool.withdrawInstantlyFrom(
+            _prizePool.withdrawInstantlyFrom(
                 address(this),
-                _amount,
+                amount,
                 address(ticket),
                 exitFee
             );
@@ -536,6 +552,30 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     /***********************************|
     |  Views                            |
     |__________________________________*/
+
+    /**
+     * @notice Calculate the cost of withdrawing from the Pod if the
+     * @param amount Amount of tokens to withdraw when calculating early exit fee.
+     * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
+     */
+    function getEarlyExitFee(uint256 amount) external returns (uint256) {
+        uint256 tokenBalance = vaultTokenBalance();
+        if (amount <= tokenBalance) {
+            return 0;
+        } else {
+            // Calculate Early Exit Fee
+            IPrizePool _pool = IPrizePool(_prizePool);
+            (uint256 exitFee, ) =
+                _pool.calculateEarlyExitFee(
+                    address(this),
+                    address(ticket),
+                    amount.sub(tokenBalance)
+                );
+
+            // Early Exit Fee
+            return exitFee;
+        }
+    }
 
     /**
      * @notice Calculate the cost of the Pod's token price per share. Until a Pod has won or been "airdropped" tokens it's 1.

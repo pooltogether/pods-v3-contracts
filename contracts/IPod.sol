@@ -24,8 +24,11 @@ interface IPod is IERC20Upgradeable {
     /// if the withdraw is for more funds that can be covered by the float, then a withdrawal is made against the underlying
     /// prize pool.  The user will be charged the prize pool's exit fee on the underlying funds.  The fee can be calculated using PrizePool#calculateEarlyExitFee()
     /// @param shareAmount The number of Pod shares to redeem
+    /// @param maxFee Max fee amount for withdrawl.
     /// @return The actual amount of tokens that were transferred to the user.  This is the same as the deposit token.
-    function withdraw(uint256 shareAmount) external returns (uint256);
+    function withdraw(uint256 shareAmount, uint256 maxFee)
+        external
+        returns (uint256);
 
     /// @notice Calculates the token value per Pod share.
     /// @dev This is useful for those who wish to calculate their balance.

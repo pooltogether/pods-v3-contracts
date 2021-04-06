@@ -63,11 +63,6 @@ describe("Pod - Deposit", function() {
     // getTransactionReceipt(depositTo.hash)
     let receipt = await provider.getTransactionReceipt(depositTo.hash);
 
-    console.log(testing.pod.interface.parseLog(receipt.logs[0]).name)
-    console.log(testing.pod.interface.parseLog(receipt.logs[1]).name)
-    console.log(testing.pod.interface.parseLog(receipt.logs[2]).name)
-    console.log(testing.pod.interface.parseLog(receipt.logs[3]).name)
-
     // Check All Events
     expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
       "Transfer"
@@ -195,11 +190,12 @@ describe("Pod - Deposit", function() {
       const totalSupply = await testing.pod.totalSupply();
 
       // Pod Ticket == Total Supply
-      expect(podTickets.toString()).to.equal(totalSupply.toString());
+      expect(podTickets).to.equal(totalSupply);
 
+        
       // pod.balanceOf(owner)
       const ownerBalancePreWithdraw = await testing.pod.balanceOf(
-        testing.alice.address
+        testing.alice.address,
       );
 
       expect(ownerBalancePreWithdraw).to.equal(utils.parseEther("2000"));
@@ -210,8 +206,12 @@ describe("Pod - Deposit", function() {
       // Control Next Time/Block Increase
       await advanceTimeAndBlock(1);
 
+      const getEarlyExitFee = await testing.pod.callStatic.getEarlyExitFee(
+        utils.parseEther("2000")
+      );
+
       // pod.withdraw(2000 ppToken) - convert shares to token
-      await testing.pod.withdraw(utils.parseEther("2000"));
+      await testing.pod.withdraw(utils.parseEther("2000"), getEarlyExitFee);
 
       expect(await testing.pod.balanceOf(testing.alice.address)).to.equal(
         toWei("0")
@@ -312,7 +312,13 @@ describe("Pod - Deposit", function() {
 
       // pod.withdraw(2000 ppToken) - convert shares to token
       testing.pod = testing.pod.connect(testing.alice);
-      await testing.pod.withdraw(utils.parseEther("1000"));
+
+      const getEarlyExitFeeAlice = await testing.pod.callStatic.getEarlyExitFee(
+        utils.parseEther("1000")
+      );
+
+
+      await testing.pod.withdraw(utils.parseEther("1000"), getEarlyExitFeeAlice);
 
       expect(await testing.token.balanceOf(testing.alice.address)).to.equalish(
         utils.parseEther("990"),
@@ -333,7 +339,12 @@ describe("Pod - Deposit", function() {
 
       // pod.withdraw(500 ppToken) - convert shares to token
       testing.pod = testing.pod.connect(testing.bob);
-      await testing.pod.withdraw(utils.parseEther("500"));
+
+      const getEarlyExitFeeBob = await testing.pod.callStatic.getEarlyExitFee(
+        utils.parseEther("500")
+      );
+
+      await testing.pod.withdraw(utils.parseEther("500"), getEarlyExitFeeBob);
 
       expect(await testing.token.balanceOf(testing.bob.address)).to.equalish(
         utils.parseEther("495"),
