@@ -576,9 +576,8 @@ contract Pod is
             return 0;
         } else {
             // Calculate Early Exit Fee
-            IPrizePool _pool = IPrizePool(_prizePool);
             (uint256 exitFee, ) =
-                _pool.calculateEarlyExitFee(
+                _prizePool.calculateEarlyExitFee(
                     address(this),
                     address(ticket),
                     amount.sub(tokenBalance)
