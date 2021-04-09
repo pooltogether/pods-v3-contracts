@@ -402,6 +402,9 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @return uint256 Amount claimed.
      */
     function claim(address user) external override returns (uint256) {
+        // Check Pod TokenDrop is set.
+        require(address(drop) != address(0), "Pod:drop-not-set");
+
         // Claim POOL rewards
         uint256 _balance = drop.claim(user);
 
@@ -416,16 +419,19 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @return uint256 claimed amount
      */
     function claimPodPool() public returns (uint256) {
-        uint256 _claimedAmount = faucet.claim(address(this));
+        uint256 claimedAmount = faucet.claim(address(this));
 
-        // Approve POOL transfer.
-        pool.approve(address(drop), _claimedAmount);
+        // Execute only if neccessary
+        if (claimedAmount > 0) {
+            // Approve POOL transfer.
+            pool.approve(address(drop), claimedAmount);
 
-        // Add POOl to TokenDrop balance
-        drop.addAssetToken(_claimedAmount);
+            // Add POOL to TokenDrop balance
+            drop.addAssetToken(claimedAmount);
+        }
 
         // Claimed Amount
-        return _claimedAmount;
+        return claimedAmount;
     }
 
     /**
@@ -435,13 +441,23 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @return bool true
      */
     function setTokenDrop(address _tokenDrop) external returns (bool) {
+        // Authorized to set TokenDrop smart contract
         require(
             msg.sender == factory || msg.sender == owner(),
             "Pod:unauthorized-set-token-drop"
         );
 
-        // Set TokenDrop Referance
+        // TokenDrop must be a valid smart contract
+        require(_tokenDrop != address(0), "Pod:invalid-drop-contract");
+
+        // Set TokenDrop smart contract instance
         drop = TokenDrop(_tokenDrop);
+
+        // Pod Drop asset must batch the PrizePool Faucet asset (i.e.POOL)
+        require(
+            address(drop.asset()) == address(faucet.asset()),
+            "Pod:invalid-drop-token"
+        );
 
         return true;
     }
