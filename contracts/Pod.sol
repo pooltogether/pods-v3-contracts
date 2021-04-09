@@ -331,7 +331,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         emit PodClaimed(poolAmount);
 
         // Approve Prize Pool
-        token.approve(address(_prizePool), tokenBalance);
+        token.safeApprove(address(_prizePool), tokenBalance);
 
         // PrizePool Deposit
         _prizePool.depositTo(
@@ -436,7 +436,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         uint256 _claimedAmount = faucet.claim(address(this));
 
         // Approve POOL transfer.
-        pool.approve(address(drop), _claimedAmount);
+        pool.safeApprove(address(drop), _claimedAmount);
 
         // Add POOl to TokenDrop balance
         drop.addAssetToken(_claimedAmount);
