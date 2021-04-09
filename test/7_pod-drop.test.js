@@ -21,7 +21,7 @@ const {
 // CORE_TESTS_RUN = false;
 POOL_TESTS_RUN = true;
 
-describe("Pod - Drops", function() {
+describe("Pod - Drops", function () {
   let testing = {};
   const config = getConfig("mainnet");
 
@@ -89,7 +89,7 @@ describe("Pod - Drops", function() {
 
   // POD TokenDrop Core Settings
   // ----------------------------------------------------------------
-  it("should have correct asset and measure tokens", async function() {
+  it("should have correct asset and measure tokens", async function () {
     const measure = await testing.drop.measure();
     expect(measure).to.equal(testing.pod.address);
 
@@ -101,7 +101,7 @@ describe("Pod - Drops", function() {
 
   // POD TokenDrop Core Settings
   // ----------------------------------------------------------------
-  it("should have correct initial configuration", async function() {
+  it("should have correct initial configuration", async function () {
     const totalUnclaimed = await testing.drop.totalUnclaimed();
     expect(totalUnclaimed.toString()).to.equal("0");
 
@@ -114,7 +114,7 @@ describe("Pod - Drops", function() {
 
   // Pod should always have 0 POOL without batch() called
   // ----------------------------------------------------------------
-  it("should handle multiple deposits [ @skip-on-coverage ]", async function() {
+  it("should handle multiple deposits [ @skip-on-coverage ]", async function () {
     podPoolBalance = await testing.pool.balanceOf(testing.pod.address);
 
     // Check Balance
@@ -158,7 +158,7 @@ describe("Pod - Drops", function() {
 
     // User Claim POOL allocation
     const claimOwnerStatic = await testing.pod.callStatic.claim(
-      testing.owner.address,
+      testing.owner.address
     );
 
     // Check Call Value
@@ -169,7 +169,7 @@ describe("Pod - Drops", function() {
   /******************|
   | Test Batch Deposits
   /******************/
-  describe("Settings", function() {
+  describe("Settings", function () {
     before(async () => {});
 
     /******************|
@@ -193,7 +193,7 @@ describe("Pod - Drops", function() {
   /******************|
   | Test Batch Deposits
   /******************/
-  describe("Claim POOL", function() {
+  describe("Claim POOL", function () {
     before(async () => {});
 
     /******************|
@@ -230,7 +230,7 @@ describe("Pod - Drops", function() {
 
     // Pod should always have 0 POOL without batch() called
     // ----------------------------------------------------------------
-    it("should have 0 Pod POOL rewards before batch [ @skip-on-coverage ]", async function() {
+    it("should have 0 Pod POOL rewards before batch [ @skip-on-coverage ]", async function () {
       podPoolBalance = await testing.pool.balanceOf(testing.pod.address);
 
       // Check Balance
@@ -260,7 +260,7 @@ describe("Pod - Drops", function() {
 
     // Distribute POOL to single Account
     // ----------------------------------------------------------------
-    it("Pod should accumulate POOL rewards and allow single user to withdraw total allocation [ @skip-on-coverage ]", async function() {
+    it("Pod should accumulate POOL rewards and allow single user to withdraw total allocation [ @skip-on-coverage ]", async function () {
       // token.approve(pod, balance)
       await testing.token.approve(
         testing.pod.address,
@@ -318,21 +318,16 @@ describe("Pod - Drops", function() {
         .withArgs(testing.owner.address)
         .returns(toWei("44"));
 
-      expect(
-        await call(
-          podMock,
-          "claim",
-          testing.owner.address,
-        )
-      ).to.equalish(utils.parseEther("44"), utils.parseEther("1"));
+      expect(await call(podMock, "claim", testing.owner.address)).to.equalish(
+        utils.parseEther("44"),
+        utils.parseEther("1")
+      );
 
       // User Claim POOL allocation
       const claimOwnerStatic = await testing.pod.callStatic.claim(
-        testing.owner.address,
+        testing.owner.address
       );
-      const claimOwner = await testing.pod.claim(
-        testing.owner.address,
-      );
+      const claimOwner = await testing.pod.claim(testing.owner.address);
 
       // Transaction Receipt
       let receipt = await provider.getTransactionReceipt(claimOwner.hash);
@@ -453,7 +448,7 @@ describe("Pod - Drops", function() {
 
     // Distribute POOL to multiple Accounts
     // ----------------------------------------------------------------
-    it("Pod should accumulate POOL rewards and multiple users to withdraw total allocation [ @skip-on-coverage ]", async function() {
+    it("Pod should accumulate POOL rewards and multiple users to withdraw total allocation [ @skip-on-coverage ]", async function () {
       // token.approve(pod, owner.balance)
       await testing.token.approve(
         testing.pod.address,
