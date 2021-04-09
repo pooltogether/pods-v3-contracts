@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.8.0;
 // Libraries
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
 // Module Interfaces
@@ -28,7 +29,13 @@ import "./interfaces/IPrizeStrategyMinimal.sol";
  * @dev Pods is a ERC20 token with features like shares, batched deposits and distributing mechanisms for distiubuting "bonus" tokens to users.
  * @author Kames Geraghty
  */
-contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
+contract Pod is
+    Initializable,
+    ERC20Upgradeable,
+    OwnableUpgradeable,
+    IPod,
+    ReentrancyGuard
+{
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
@@ -257,6 +264,7 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         external
         override
         pauseDepositsDuringAwarding
+        nonReentrant
         returns (uint256)
     {
         require(tokenAmount > 0, "Pod:invalid-amount");
@@ -287,7 +295,12 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @param shareAmount The number of Pod shares to redeem.
      * @return The actual amount of tokens that were transferred to the user.  This is the same as the deposit token.
      */
-    function withdraw(uint256 shareAmount) external override returns (uint256) {
+    function withdraw(uint256 shareAmount)
+        external
+        override
+        nonReentrant
+        returns (uint256)
+    {
         // Check User Balance
         require(
             balanceOf(msg.sender) >= shareAmount,
@@ -467,7 +480,11 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     |__________________________________*/
 
     /**
+<<<<<<< HEAD
      * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amount.
+=======
+     * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amoint.
+>>>>>>> fix/3.4
      * @param amount Amount of "token" deposited into the Pod.
      * @return uint256 The share allocation amount.
      */
