@@ -437,7 +437,7 @@ contract Pod is
         // Execute only if neccessary
         if (claimedAmount > 0) {
             // Approve POOL transfer.
-            pool.approve(address(drop), claimedAmount);
+            pool.safeApprove(address(drop), claimedAmount);
 
             // Add POOL to TokenDrop balance
             drop.addAssetToken(claimedAmount);
@@ -480,7 +480,7 @@ contract Pod is
     |__________________________________*/
 
     /**
-     * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amoint.
+     * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amount.
      * @param amount Amount of "token" deposited into the Pod.
      * @return uint256 The share allocation amount.
      */
