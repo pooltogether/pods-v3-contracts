@@ -2,9 +2,9 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 interface TokenFaucet {
-    /// @notice The timestamp at which the tokens were last dripped
-    // uint32 public lastDripTimestamp;
     function claim(address user) external returns (uint256);
+
+    function asset() external returns (address);
 
     function dripRatePerSecond() external returns (uint256);
 
