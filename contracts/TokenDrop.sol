@@ -103,8 +103,6 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     ) external {
         // must be measure and not be minting
         if (token == address(measure)) {
-            drop();
-
             // Calcuate to tokens balance
             _captureNewTokensForUser(to);
 
@@ -137,7 +135,6 @@ contract TokenDrop is Initializable, ReentrancyGuard {
      * @param user User account
      */
     function claim(address user) external returns (uint256) {
-        drop();
         _captureNewTokensForUser(user);
         uint256 balance = userStates[user].balance;
         userStates[user].balance = 0;
