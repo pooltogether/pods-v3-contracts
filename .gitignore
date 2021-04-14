@@ -1,12 +1,15 @@
+# Development Environment
 node_modules
+*-lock.json
+.env
 
-#Buidler files
+# Hardhat files
 cache
 artifacts
 data
 
-*-lock.json
-.env
+# Testing
+coverage
 
-#Development
+# Development Notes
 *.dev.md
