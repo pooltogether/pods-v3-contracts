@@ -10,6 +10,7 @@ data
 
 # Testing
 coverage
+coverage.json
 
 # Development Notes
 *.dev.md
