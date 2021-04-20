@@ -161,13 +161,15 @@ contract Pod is
      * @param _pool PoolTogether Goverance token - distributed for users with active deposits.
      * @param _faucet TokenFaucet reference that distributes POOL token for deposits
      * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
+     * @param _decimals Set the Pod decimals to match the underlying asset.
      */
     function initialize(
         address _prizePoolTarget,
         address _ticket,
         address _pool,
         address _faucet,
-        address _manager
+        address _manager,
+        uint8 _decimals
     ) external initializer {
         // Prize Pool
         _prizePool = IPrizePool(_prizePoolTarget);
@@ -190,6 +192,9 @@ contract Pod is
 
         // Initialize Owner
         __Ownable_init_unchained();
+
+        // Setup Decimals - Match Underlying Asset
+        _setupDecimals(_decimals);
 
         // Request PrizePool Tickets
         address[] memory tickets = _prizePool.tokens();
