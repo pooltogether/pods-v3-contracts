@@ -66,17 +66,17 @@ contract Pod is
     |   Events                          |
     |__________________________________*/
     /**
-     * @dev Emitted when user deposits into batch backlog
+     * @dev Emitted when user deposits into batch backlog.
      */
     event Deposited(address user, uint256 amount, uint256 shares);
 
     /**
-     * @dev Emitted when user withdraws
+     * @dev Emitted when user withdraws.
      */
     event Withdrawl(address user, uint256 amount, uint256 shares);
 
     /**
-     * @dev Emitted when batch deposit is executed
+     * @dev Emitted when batch deposit is executed.
      */
     event Batch(uint256 amount, uint256 timestamp);
 
@@ -91,17 +91,22 @@ contract Pod is
     event Claimed(address user, uint256 balance);
 
     /**
-     * @dev Emitted when POOl is claimed for the POD
+     * @dev Emitted when POOl is claimed for the POD.
      */
     event PodClaimed(uint256 amount);
 
     /**
-     * @dev Emitted when a ERC20 is withdrawn
+     * @dev Emitted when the Pod TokenDrop is set.
+     */
+    event TokenDropSet(address drop);
+
+    /**
+     * @dev Emitted when a ERC20 is withdrawn.
      */
     event ERC20Withdrawn(address target, uint256 tokenId);
 
     /**
-     * @dev Emitted when a ERC721 is withdrawn
+     * @dev Emitted when a ERC721 is withdrawn.
      */
     event ERC721Withdrawn(address target, uint256 tokenId);
 
@@ -331,11 +336,8 @@ contract Pod is
         // batchAmount can be below tokenBalance to keep a withdrawble float amount.
         require(batchAmount <= tokenBalance, "Pod:insufficient-float-balance");
 
-        // Claim POOL drop backlog.
-        uint256 poolAmount = claimPodPool();
-
-        // Emit PodClaimed
-        emit PodClaimed(poolAmount);
+        // Claim outstanding TokenDrop asset for Pod.
+        claimPodPool();
 
         // Approve Prize Pool
         token.safeApprove(address(_prizePool), tokenBalance);
@@ -443,6 +445,9 @@ contract Pod is
             drop.addAssetToken(claimedAmount);
         }
 
+        // Emit PodClaimed
+        emit PodClaimed(claimedAmount);
+
         // Claimed Amount
         return claimedAmount;
     }
@@ -471,6 +476,9 @@ contract Pod is
             address(drop.asset()) == address(faucet.asset()),
             "Pod:invalid-drop-token"
         );
+
+        // Emit TokenDropSet
+        emit TokenDropSet(_tokenDrop);
 
         return true;
     }
