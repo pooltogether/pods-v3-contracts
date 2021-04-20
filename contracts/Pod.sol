@@ -347,7 +347,7 @@ contract Pod is
         emit PodClaimed(poolAmount);
 
         // Approve Prize Pool
-        token.safeApprove(address(_prizePool), tokenBalance);
+        token.safeApprove(address(_prizePool), batchAmount);
 
         // PrizePool Deposit
         _prizePool.depositTo(
