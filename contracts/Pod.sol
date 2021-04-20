@@ -340,7 +340,7 @@ contract Pod is
         claimPodPool();
 
         // Approve Prize Pool
-        token.safeApprove(address(_prizePool), tokenBalance);
+        token.safeApprove(address(_prizePool), batchAmount);
 
         // PrizePool Deposit
         _prizePool.depositTo(
@@ -488,7 +488,11 @@ contract Pod is
     |__________________________________*/
 
     /**
+<<<<<<< HEAD
      * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amount.
+=======
+     * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amoint.
+>>>>>>> fix/3.5
      * @param amount Amount of "token" deposited into the Pod.
      * @return uint256 The share allocation amount.
      */
