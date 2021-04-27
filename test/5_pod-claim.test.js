@@ -72,21 +72,15 @@ describe("Pod - Claim", function() {
     testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDrop);
   });
 
-  it("should fail to claim from non-existant TokenDrop", async function() {
-    await expect(
-      testing.pod.claim(testing.owner.address, constants.AddressZero)
-    ).to.be.revertedWith("Pod:invalid-token-drop");
-  });
 
   it("should claim 0 when pod has no previous or current token balance", async function() {
     // callStatic.claim()
     const claimStatic = await testing.pod.callStatic.claim(
       testing.owner.address,
-      token
     );
 
     // claim()
-    const claim = testing.pod.claim(testing.owner.address, token);
+    const claim = testing.pod.claim(testing.owner.address);
 
     // Validate Pod/TokenDrop using events.
     await expect(claim)
@@ -129,11 +123,10 @@ describe("Pod - Claim", function() {
     // callStatic.claim()
     const claimStatic = await testing.pod.callStatic.claim(
       testing.owner.address,
-      token
     );
 
     // claim()
-    const claim = testing.pod.claim(testing.owner.address, token);
+    const claim = testing.pod.claim(testing.owner.address);
 
     // Validate Pod/TokenDrop using events.
     await expect(claim)
