@@ -143,7 +143,8 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
     config.ticket,
     config.pool,
     config.faucet,
-    testing.podManager.address
+    testing.podManager.address,
+    18
   );
 
   // Create Pod/TokenDrop using PodFactory Smart Contract
@@ -152,7 +153,8 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
     config.ticket,
     config.pool,
     config.faucet,
-    testing.podManager.address
+    testing.podManager.address,
+    18
   );
 
   testing.pod = await ethers.getContractAt(

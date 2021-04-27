@@ -68,7 +68,8 @@ describe("PodFactory", function () {
       constants.AddressZero,
       pool,
       faucet,
-      constants.AddressZero
+      constants.AddressZero,
+      18
     );
 
     await expect(tokenDropFactory).to.be.revertedWith(
@@ -83,7 +84,8 @@ describe("PodFactory", function () {
       ticket,
       pool,
       faucet,
-      constants.AddressZero // PodLiquidatorManager
+      constants.AddressZero, // PodLiquidatorManager
+      18
     );
 
     // create()
@@ -92,7 +94,8 @@ describe("PodFactory", function () {
       ticket,
       pool,
       faucet,
-      constants.AddressZero // PodLiquidatorManager
+      constants.AddressZero, // PodLiquidatorManager
+      18
     );
 
     // Validate Pod/TokenDrop using events.
