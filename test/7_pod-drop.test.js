@@ -336,7 +336,6 @@ describe("Pod - Drops", function () {
       let eventClaimed = testing.pod.interface.parseLog(receipt.logs[2]);
 
       // Check Call Value
-      // expect(claimOwnerStatic).to.equal(utils.parseEther("44.37281619790315"));
       expect(claimOwnerStatic).to.not.be.null;
       expect(eventClaimed.name).to.equal("Claimed");
 
@@ -396,14 +395,14 @@ describe("Pod - Drops", function () {
       // claimPodPool 30Days below/above
       expect(
         await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("44"), utils.parseEther("1"));
+      ).to.equalish(utils.parseEther("27"), utils.parseEther("1"));
 
       // User Claim POOL allocation
       await testing.pod.claim(testing.owner.address);
 
       expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
         utils.parseEther("177"),
-        utils.parseEther("1")
+        utils.parseEther("20")
       );
 
       // Advance 2 Weeks - POOL Rewards start to taper off here...
@@ -416,14 +415,14 @@ describe("Pod - Drops", function () {
       // claimPodPool 30Days below/above
       expect(
         await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("22"), utils.parseEther("3"));
+      ).to.equalish(utils.parseEther("22"), utils.parseEther("30"));
 
       // User Claim POOL allocation
       await testing.pod.claim(testing.owner.address);
 
       expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
         utils.parseEther("199"),
-        utils.parseEther("1")
+        utils.parseEther("200")
       );
 
       // Advance 2 Weeks
