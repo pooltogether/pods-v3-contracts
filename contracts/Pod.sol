@@ -447,22 +447,21 @@ contract Pod is
      * @return uint256 claimed amount
      */
     function claimPodPool() public returns (uint256) {
-        uint256 claimedAmount = faucet.claim(address(this));
+        faucet.claim(address(this));
+        uint256 balance = pool.balanceOf(address(this));
 
-        // Execute only if neccessary
-        if (claimedAmount > 0) {
+        if (balance > 0) {
             // Approve POOL transfer.
-            pool.safeApprove(address(drop), claimedAmount);
+            pool.safeApprove(address(drop), balance);
 
             // Add POOL to TokenDrop balance
-            drop.addAssetToken(claimedAmount);
+            drop.addAssetToken(balance);
         }
 
         // Emit PodClaimed
-        emit PodClaimed(claimedAmount);
+        emit PodClaimed(balance);
 
-        // Claimed Amount
-        return claimedAmount;
+        return balance;
     }
 
     /**
