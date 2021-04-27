@@ -65,6 +65,7 @@ contract PodFactory is ProxyFactory {
      * @param _pool PoolTogether Goverance token - distributed for users with active deposits.
      * @param _faucet TokenFaucet reference that distributes POOL token for deposits
      * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
+     * @param _decimals Set the Pod decimals to match the underlying asset.
      * @return (address, address) Pod and TokenDrop addresses
      */
     function create(
@@ -72,13 +73,21 @@ contract PodFactory is ProxyFactory {
         address _ticket,
         address _pool,
         address _faucet,
-        address _manager
+        address _manager,
+        uint8 _decimals
     ) external returns (address, address) {
         // Pod Deploy
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
         // Pod Initialize
-        pod.initialize(_prizePoolTarget, _ticket, _pool, _faucet, _manager);
+        pod.initialize(
+            _prizePoolTarget,
+            _ticket,
+            _pool,
+            _faucet,
+            _manager,
+            _decimals
+        );
 
         // Update Owner
         pod.transferOwnership(msg.sender);
