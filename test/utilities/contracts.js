@@ -87,7 +87,8 @@ const createPodAndTokenDrop = async (testing, config) => {
     config.podDAI.ticket,
     config.podDAI.pool,
     config.podDAI.faucet,
-    testing.podManager.address
+    testing.podManager.address,
+    18
   );
 
   // Create Pod/TokenDrop using PodFactory Smart Contract
@@ -96,7 +97,8 @@ const createPodAndTokenDrop = async (testing, config) => {
     config.podDAI.ticket,
     config.podDAI.pool,
     config.podDAI.faucet,
-    testing.podManager.address
+    testing.podManager.address,
+    18
   );
 
   testing.pod = await ethers.getContractAt(
