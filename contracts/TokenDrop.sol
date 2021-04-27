@@ -2,6 +2,7 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 // External Libraries
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@pooltogether/fixed-point/contracts/FixedPoint.sol";
@@ -20,7 +21,7 @@ import "./libraries/ExtendedSafeCast.sol";
  * @dev A simplified version of the PoolTogether TokenFaucet that simplifies an asset token distribution using totalSupply calculations.
  * @author Kames Cox-Geraghty
  */
-contract TokenDrop is Initializable {
+contract TokenDrop is Initializable, ReentrancyGuard {
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
@@ -77,7 +78,11 @@ contract TokenDrop is Initializable {
     /**
      * @notice Initialize TokenDrop Smart Contract
      */
-    function initialize(address _measure, address _asset) external {
+    function initialize(address _measure, address _asset) external initializer {
+        require(_measure != address(0), "Pod:invalid-measure-token");
+        require(_asset != address(0), "Pod:invalid-asset-token");
+
+        // Set measure/asset tokens.
         measure = IERC20Upgradeable(_measure);
         asset = IERC20Upgradeable(_asset);
 
@@ -102,8 +107,6 @@ contract TokenDrop is Initializable {
     ) external {
         // must be measure and not be minting
         if (token == address(measure)) {
-            drop();
-
             // Calcuate to tokens balance
             _captureNewTokensForUser(to);
 
@@ -136,14 +139,13 @@ contract TokenDrop is Initializable {
      * @param user User account
      */
     function claim(address user) external returns (uint256) {
-        drop();
         _captureNewTokensForUser(user);
         uint256 balance = userStates[user].balance;
         userStates[user].balance = 0;
         totalUnclaimed = uint256(totalUnclaimed).sub(balance).toUint112();
 
-        // Transfer asset/reward token to user
-        asset.safeTransfer(user, balance);
+        // Internal _nonReentrantTransfer
+        _nonReentrantTransfer(user, balance);
 
         // Emit Claimed
         emit Claimed(user, balance);
@@ -152,13 +154,13 @@ contract TokenDrop is Initializable {
     }
 
     /**
-     * @notice Drips new tokens.
+     * @notice Drops new tokens.
      * @dev Should be called immediately before any measure token mints/transfers/burns
-     * @return The number of new tokens dripped.
+     * @return The number of new tokens dropped.
      */
 
     // change to drop
-    function drop() public returns (uint256) {
+    function drop() public nonReentrant returns (uint256) {
         uint256 assetTotalSupply = asset.balanceOf(address(this));
         uint256 newTokens = assetTotalSupply.sub(totalUnclaimed);
 
@@ -189,6 +191,20 @@ contract TokenDrop is Initializable {
     /***********************************|
     |   Private/Internal                |
     |__________________________________*/
+
+    /**
+     * @dev Transfer asset with reenrancy protection
+     * @param user User account
+     * @param amount Transfer amount
+     */
+    function _nonReentrantTransfer(address user, uint256 amount)
+        internal
+        nonReentrant
+        returns (uint256)
+    {
+        // Transfer asset/reward token to user
+        asset.safeTransfer(user, amount);
+    }
 
     /**
      * @notice Captures new tokens for a user

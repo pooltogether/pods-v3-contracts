@@ -26,6 +26,10 @@ contract ProxyFactory {
             proxy := create(0, clone, 0x37)
         }
 
+        // Check Proxy instance is not 0x0000000000000000000000000000000000000000
+        require(address(proxy) != address(0), "ProxyFactory:invalid-address");
+
+        // Emit ProxyCreated
         emit ProxyCreated(address(proxy));
 
         if (_data.length > 0) {
