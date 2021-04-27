@@ -10,7 +10,7 @@ const {
 } = require("./utilities/contracts");
 const { constants } = require("ethers");
 
-describe("PodFactory", function() {
+describe("PodFactory", function () {
   let testing = {};
   const config = getConfig("mainnet");
 
@@ -48,20 +48,20 @@ describe("PodFactory", function() {
 
   // Test Basics
   // ----------------------------------------------------------------
-  it("should have the TokenDropFactory reference", async function() {
+  it("should have the TokenDropFactory reference", async function () {
     // tokenDropFactory()
     const tokenDropFactory = await testing.podFactory.tokenDropFactory();
 
     expect(tokenDropFactory).equal(testing.tokenDropFactory.address);
   });
 
-  it("should have correct factory reference in Pod smart contract", async function() {
+  it("should have correct factory reference in Pod smart contract", async function () {
     // factory()
     const factory = await testing.pod.factory();
     expect(factory).equal(testing.podFactory.address);
   });
 
-  it("should fail to create a new Pod with incorrect ticket", async function() {
+  it("should fail to create a new Pod with incorrect ticket", async function () {
     // create()
     const tokenDropFactory = testing.podFactory.create(
       prizePool,
@@ -76,7 +76,7 @@ describe("PodFactory", function() {
     );
   });
 
-  it("should succeed creating a new Pod with with DAI settings", async function() {
+  it("should succeed creating a new Pod with with DAI settings", async function () {
     // callStatic.create()
     const tokenDropFactoryCallStatic = await testing.podFactory.callStatic.create(
       prizePool,
@@ -101,29 +101,21 @@ describe("PodFactory", function() {
       .withArgs(tokenDropFactoryCallStatic[0], tokenDropFactoryCallStatic[1]);
   });
 
-  it("should fail when setting token drop reference from not authorized account", async function() {
+  it("should fail when setting token drop reference from not authorized account", async function () {
     testing.pod = testing.pod.connect(testing.alice);
 
     // setTokenDrop()
-    const setTokenDrop = testing.pod.setTokenDrop(
-      testing.token.address,
-      constants.AddressZero
-    );
+    const setTokenDrop = testing.pod.setTokenDrop(testing.token.address);
     // expect(setTokenDrop).equal(testing.podFactory.address);
     await expect(setTokenDrop).to.be.revertedWith(
       "Pod:unauthorized-set-token-drop"
     );
   });
 
-  it("should succeed when setting token drop reference from an authorized account", async function() {
+  it("should fail when setting invalid token drop smart contract", async function () {
     // setTokenDrop()
-    await testing.pod.setTokenDrop(
-      constants.AddressZero,
-      constants.AddressZero
-    );
+    const setTokenDrop = testing.pod.setTokenDrop(constants.AddressZero);
 
-    // drop()
-    const drop = await testing.pod.drop();
-    expect(drop).equal(constants.AddressZero);
+    await expect(setTokenDrop).to.be.revertedWith("Pod:invalid-drop-contract");
   });
 });

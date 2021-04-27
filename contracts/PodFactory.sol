@@ -86,7 +86,7 @@ contract PodFactory is ProxyFactory {
         TokenDrop tokenDrop = tokenDropFactory.create(address(pod), _pool);
 
         // TokenDrop Pod Initialize - Add Pod.token() to TokenDrop
-        pod.setTokenDrop(address(pod.token()), address(tokenDrop));
+        pod.setTokenDrop(address(tokenDrop));
 
         // Emit LogCreatedPodAndTokenDrop
         emit LogCreatedPodAndTokenDrop(address(pod), address(tokenDrop));
