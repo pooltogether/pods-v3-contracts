@@ -9,7 +9,7 @@ const setupContractFactories = async (testing) => {
   );
   testing.POD_MANAGER = await ethers.getContractFactory("PodManager");
   testing.ERC20 = await ethers.getContractFactory(
-    "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20"
+    "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
   );
 
   // Deploy PodManager Smart Contract
