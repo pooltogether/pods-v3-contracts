@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.8.0;
 // Libraries
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
 // Module Interfaces
@@ -28,7 +29,13 @@ import "./interfaces/IPrizeStrategyMinimal.sol";
  * @dev Pods is a ERC20 token with features like shares, batched deposits and distributing mechanisms for distiubuting "bonus" tokens to users.
  * @author Kames Geraghty
  */
-contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
+contract Pod is
+    Initializable,
+    ERC20Upgradeable,
+    OwnableUpgradeable,
+    IPod,
+    ReentrancyGuard
+{
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
@@ -55,30 +62,21 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     // Factory
     address public factory;
 
-    /**
-     * @dev Pods can include token drops for multiple assets and not just the standard POOL.
-     * Generally a Pod will only inlude a TokenDrop for POOL, but it's possible that a Pod
-     * may add additional TokenDrops in the future. The Pod includes a `claimPodPool` method
-     * to claim POOL, but other TokenDrops would require an external method for adding an
-     * "asset" token to the TokenDrop smart contract, before calling the `claim` method.
-     */
-    mapping(address => TokenDrop) public drops;
-
     /***********************************|
     |   Events                          |
     |__________________________________*/
     /**
-     * @dev Emitted when user deposits into batch backlog
+     * @dev Emitted when user deposits into batch backlog.
      */
     event Deposited(address user, uint256 amount, uint256 shares);
 
     /**
-     * @dev Emitted when user withdraws
+     * @dev Emitted when user withdraws.
      */
-    event Withdrawl(address user, uint256 amount, uint256 shares);
+    event Withdrawal(address user, uint256 amount, uint256 shares);
 
     /**
-     * @dev Emitted when batch deposit is executed
+     * @dev Emitted when batch deposit is executed.
      */
     event Batch(uint256 amount, uint256 timestamp);
 
@@ -93,17 +91,22 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     event Claimed(address user, uint256 balance);
 
     /**
-     * @dev Emitted when POOl is claimed for the POD
+     * @dev Emitted when POOl is claimed for the POD.
      */
     event PodClaimed(uint256 amount);
 
     /**
-     * @dev Emitted when a ERC20 is withdrawn
+     * @dev Emitted when the Pod TokenDrop is set.
+     */
+    event TokenDropSet(address drop);
+
+    /**
+     * @dev Emitted when a ERC20 is withdrawn.
      */
     event ERC20Withdrawn(address target, uint256 tokenId);
 
     /**
-     * @dev Emitted when a ERC721 is withdrawn
+     * @dev Emitted when a ERC721 is withdrawn.
      */
     event ERC721Withdrawn(address target, uint256 tokenId);
 
@@ -236,7 +239,10 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         returns (bool)
     {
         // Require Valid Address
-        require(address(manager) != address(0), "Pod:invalid-manager-address");
+        require(
+            address(newManager) != address(0),
+            "Pod:invalid-manager-address"
+        );
 
         // Emit ManagementTransferred
         emit ManagementTransferred(address(manager), address(newManager));
@@ -266,12 +272,13 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         external
         override
         pauseDepositsDuringAwarding
+        nonReentrant
         returns (uint256)
     {
         require(tokenAmount > 0, "Pod:invalid-amount");
 
         // Allocate Shares from Deposit To Amount
-        uint256 shares = _deposit(to, tokenAmount);
+        uint256 shares = _calculateAllocation(tokenAmount);
 
         // Transfer Token Transfer Message Sender
         IERC20Upgradeable(token).safeTransferFrom(
@@ -279,6 +286,9 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
             address(this),
             tokenAmount
         );
+
+        // Mint User Shares
+        _mint(to, shares);
 
         // Emit Deposited
         emit Deposited(to, tokenAmount, shares);
@@ -291,9 +301,15 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @notice Withdraws a users share of the prize pool.
      * @dev The function should first withdraw from the 'float'; i.e. the funds that have not yet been deposited.
      * @param shareAmount The number of Pod shares to redeem.
+     * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return The actual amount of tokens that were transferred to the user.  This is the same as the deposit token.
      */
-    function withdraw(uint256 shareAmount) external override returns (uint256) {
+    function withdraw(uint256 shareAmount, uint256 maxFee)
+        external
+        override
+        nonReentrant
+        returns (uint256)
+    {
         // Check User Balance
         require(
             balanceOf(msg.sender) >= shareAmount,
@@ -301,12 +317,16 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         );
 
         // Burn Shares and Return Tokens
-        uint256 tokens = _burnShares(shareAmount);
+        uint256 tokensReturned =
+            _burnSharesAndGetTokensReturned(shareAmount, maxFee);
 
-        // Emit Withdrawl
-        emit Withdrawl(msg.sender, tokens, shareAmount);
+        // Transfer Deposit Token to Message Sender
+        token.safeTransfer(msg.sender, tokensReturned);
 
-        return tokens;
+        // Emit Withdrawal
+        emit Withdrawal(msg.sender, tokensReturned, shareAmount);
+
+        return tokensReturned;
     }
 
     /**
@@ -324,11 +344,8 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         // batchAmount can be below tokenBalance to keep a withdrawble float amount.
         require(batchAmount <= tokenBalance, "Pod:insufficient-float-balance");
 
-        // Claim POOL drop backlog.
-        uint256 poolAmount = claimPodPool();
-
-        // Emit PodClaimed
-        emit PodClaimed(poolAmount);
+        // Claim outstanding TokenDrop asset for Pod.
+        claimPodPool();
 
         // Approve Prize Pool
         token.safeApprove(address(_prizePool), batchAmount);
@@ -405,22 +422,14 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @notice Allows a user to claim POOL tokens for an address.  The user will be transferred their share of POOL tokens.
      * @dev Allows a user to claim POOL tokens for an address.  The user will be transferred their share of POOL tokens.
      * @param user User account
-     * @param _token The target token
      * @return uint256 Amount claimed.
      */
-    function claim(address user, address _token)
-        external
-        override
-        returns (uint256)
-    {
-        // Get token<>tokenDrop mapping
-        require(
-            drops[_token] != TokenDrop(address(0)),
-            "Pod:invalid-token-drop"
-        );
+    function claim(address user) external override returns (uint256) {
+        // Check Pod TokenDrop is set.
+        require(address(drop) != address(0), "Pod:drop-not-set");
 
         // Claim POOL rewards
-        uint256 _balance = drops[_token].claim(user);
+        uint256 _balance = drop.claim(user);
 
         emit Claimed(user, _balance);
 
@@ -433,45 +442,51 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
      * @return uint256 claimed amount
      */
     function claimPodPool() public returns (uint256) {
-        uint256 _claimedAmount = faucet.claim(address(this));
+        uint256 claimedAmount = faucet.claim(address(this));
 
-        // Approve POOL transfer.
-        pool.safeApprove(address(drop), _claimedAmount);
+        // Execute only if neccessary
+        if (claimedAmount > 0) {
+            // Approve POOL transfer.
+            pool.safeApprove(address(drop), claimedAmount);
 
-        // Add POOl to TokenDrop balance
-        drop.addAssetToken(_claimedAmount);
+            // Add POOL to TokenDrop balance
+            drop.addAssetToken(claimedAmount);
+        }
+
+        // Emit PodClaimed
+        emit PodClaimed(claimedAmount);
 
         // Claimed Amount
-        return _claimedAmount;
+        return claimedAmount;
     }
 
     /**
      * @notice Setup TokenDrop reference
      * @dev Initialize the Pod Smart Contact
-     * @param _token IERC20Upgradeable
      * @param _tokenDrop TokenDrop address
      * @return bool true
      */
-    function setTokenDrop(address _token, address _tokenDrop)
-        external
-        returns (bool)
-    {
+    function setTokenDrop(address _tokenDrop) external returns (bool) {
+        // Authorized to set TokenDrop smart contract
         require(
             msg.sender == factory || msg.sender == owner(),
             "Pod:unauthorized-set-token-drop"
         );
 
-        // Check if target<>tokenDrop mapping exists
-        require(
-            drops[_token] == TokenDrop(0),
-            "Pod:target-tokendrop-mapping-exists"
-        );
+        // TokenDrop must be a valid smart contract
+        require(_tokenDrop != address(0), "Pod:invalid-drop-contract");
 
-        // Set TokenDrop Referance
+        // Set TokenDrop smart contract instance
         drop = TokenDrop(_tokenDrop);
 
-        // Set target<>tokenDrop mapping
-        drops[_token] = drop;
+        // Pod Drop asset must batch the PrizePool Faucet asset (i.e.POOL)
+        require(
+            address(drop.asset()) == address(faucet.asset()),
+            "Pod:invalid-drop-token"
+        );
+
+        // Emit TokenDropSet
+        emit TokenDropSet(_tokenDrop);
 
         return true;
     }
@@ -482,11 +497,10 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
 
     /**
      * @dev The internal function for the public depositTo function, which calculates a user's allocated shares from deposited amoint.
-     * @param user User's address.
      * @param amount Amount of "token" deposited into the Pod.
      * @return uint256 The share allocation amount.
      */
-    function _deposit(address user, uint256 amount) internal returns (uint256) {
+    function _calculateAllocation(uint256 amount) internal returns (uint256) {
         uint256 allocation = 0;
 
         // Calculate Allocation
@@ -496,9 +510,6 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
             allocation = (amount.mul(totalSupply())).div(balance());
         }
 
-        // Mint User Shares
-        _mint(user, allocation);
-
         // Return Allocation Amount
         return allocation;
     }
@@ -506,9 +517,13 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     /**
      * @dev The internal function for the public withdraw function, which calculates a user's token allocation from burned shares.
      * @param shares Amount of "token" deposited into the Pod.
+     * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return uint256 The token amount returned for the burned shares.
      */
-    function _burnShares(uint256 shares) internal returns (uint256) {
+    function _burnSharesAndGetTokensReturned(uint256 shares, uint256 maxFee)
+        internal
+        returns (uint256)
+    {
         // Calculate Percentage Returned from Burned Shares
         uint256 amount = (balance().mul(shares)).div(totalSupply());
 
@@ -516,51 +531,41 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
         _burn(msg.sender, shares);
 
         // Check balance
-        IERC20Upgradeable _token = IERC20Upgradeable(token);
-        uint256 currentBalance = _token.balanceOf(address(this));
+        uint256 currentBalance = token.balanceOf(address(this));
 
-        // Withdrawl Exceeds Current Token Balance
+        // Withdrawal Exceeds Current Token Balance
         if (amount > currentBalance) {
-            // Calculate Withdrawl Amount
-            uint256 _withdraw = amount.sub(currentBalance);
+            // Calculate Withdrawal Amount
+            uint256 withdraw = amount.sub(currentBalance);
 
             // Withdraw from Prize Pool
-            uint256 exitFee = _withdrawFromPool(_withdraw);
+            uint256 exitFee = _withdrawFromPool(withdraw, maxFee);
 
-            // Add Exit Fee to Withdrawl Amount
+            // Add Exit Fee to Withdrawal Amount
             amount = amount.sub(exitFee);
         }
 
-        // Transfer Deposit Token to Message Sender
-        _token.safeTransfer(msg.sender, amount);
-
-        // Return Token Withdrawl Amount
+        // Return Token Withdrawal Amount
         return amount;
     }
 
     /**
      * @dev Withdraws from Pod prizePool if the float balance can cover the total withdraw amount.
-     * @param _amount Amount of tokens to withdraw in exchange for the tickets transfered.
+     * @param amount Amount of tokens to withdraw in exchange for the tickets transfered.
+     * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return uint256 The exit fee paid for withdraw from the prizePool instant withdraw method.
      */
-    function _withdrawFromPool(uint256 _amount) internal returns (uint256) {
-        IPrizePool _pool = IPrizePool(_prizePool);
-
-        // Calculate Early Exit Fee
-        (uint256 exitFee, ) =
-            _pool.calculateEarlyExitFee(
-                address(this),
-                address(ticket),
-                _amount
-            );
-
+    function _withdrawFromPool(uint256 amount, uint256 maxFee)
+        internal
+        returns (uint256)
+    {
         // Withdraw from Prize Pool
         uint256 exitFeePaid =
-            _pool.withdrawInstantlyFrom(
+            _prizePool.withdrawInstantlyFrom(
                 address(this),
-                _amount,
+                amount,
                 address(ticket),
-                exitFee
+                maxFee
             );
 
         // Exact Exit Fee
@@ -570,6 +575,29 @@ contract Pod is Initializable, ERC20Upgradeable, OwnableUpgradeable, IPod {
     /***********************************|
     |  Views                            |
     |__________________________________*/
+
+    /**
+     * @notice Calculate the cost of withdrawing from the Pod if the
+     * @param amount Amount of tokens to withdraw when calculating early exit fee.
+     * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
+     */
+    function getEarlyExitFee(uint256 amount) external returns (uint256) {
+        uint256 tokenBalance = vaultTokenBalance();
+        if (amount <= tokenBalance) {
+            return 0;
+        } else {
+            // Calculate Early Exit Fee
+            (uint256 exitFee, ) =
+                _prizePool.calculateEarlyExitFee(
+                    address(this),
+                    address(ticket),
+                    amount.sub(tokenBalance)
+                );
+
+            // Early Exit Fee
+            return exitFee;
+        }
+    }
 
     /**
      * @notice Calculate the cost of the Pod's token price per share. Until a Pod has won or been "airdropped" tokens it's 1.
