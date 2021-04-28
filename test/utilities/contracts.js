@@ -85,7 +85,6 @@ const createPodAndTokenDrop = async (testing, config) => {
   testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
     config.podDAI.prizePool,
     config.podDAI.ticket,
-    config.podDAI.pool,
     config.podDAI.faucet,
     testing.podManager.address,
     18
@@ -95,7 +94,6 @@ const createPodAndTokenDrop = async (testing, config) => {
   testing.pod_and_tokendrop_create = await testing.podFactory.create(
     config.podDAI.prizePool,
     config.podDAI.ticket,
-    config.podDAI.pool,
     config.podDAI.faucet,
     testing.podManager.address,
     18
@@ -141,7 +139,6 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
   testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
     config.prizePool,
     config.ticket,
-    config.pool,
     config.faucet,
     testing.podManager.address,
     18
@@ -151,7 +148,6 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
   testing.pod_and_tokendrop_create = await testing.podFactory.create(
     config.prizePool,
     config.ticket,
-    config.pool,
     config.faucet,
     testing.podManager.address,
     18

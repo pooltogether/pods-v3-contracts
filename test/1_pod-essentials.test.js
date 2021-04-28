@@ -80,22 +80,22 @@ describe("Pod", function() {
     expect(ticket).equal(config.podDAI.ticket);
   });
 
-  it("should have the correct pool token", async function() {
+  it("should have the correct reward token", async function() {
     // PoolToken
-    const pool = await testing.pod.pool();
+    const pool = await testing.pod.reward();
     expect(pool).equal(config.podDAI.pool);
   });
 
   it("should have 0 pool token", async function() {
-    // vaultPoolBalance()
-    const vaultPoolBalance = await testing.pod.vaultPoolBalance();
-    expect(vaultPoolBalance).equal(utils.parseEther("0"));
+    // vaultRewardBalance()
+    const vaultRewardBalance = await testing.pod.vaultRewardBalance();
+    expect(vaultRewardBalance).equal(utils.parseEther("0"));
   });
 
   it("should have 0 pool token", async function() {
-    // vaultPoolBalance()
-    const vaultPoolBalance = await testing.pod.vaultPoolBalance();
-    expect(vaultPoolBalance).equal(utils.parseEther("0"));
+    // vaultRewardBalance()
+    const vaultRewardBalance = await testing.pod.vaultRewardBalance();
+    expect(vaultRewardBalance).equal(utils.parseEther("0"));
   });
 
   it("should have 0 getPricePerShare", async function() {

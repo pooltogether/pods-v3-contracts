@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
-
+import "hardhat/console.sol";
 // Libraries
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -26,7 +26,7 @@ import "./interfaces/IPrizeStrategyMinimal.sol";
 /**
  * @title Pod (Initialize, ERC20Upgradeable, OwnableUpgradeable, IPod) - Reduce User Gas Costs and Increase Odds of Winning via Collective Deposits.
  * @notice Pods turn PoolTogether deposits into shares and enable batched deposits, reudcing gas costs and collectively increasing odds  winning.
- * @dev Pods is a ERC20 token with features like shares, batched deposits and distributing mechanisms for distiubuting "bonus" tokens to users.
+ * @dev Pods is a ERC20 token with additional features: shares (representing deposits), batched deposits into PoolTogether PrizePools and claimable rewards.
  * @author Kames Geraghty
  */
 contract Pod is
@@ -47,17 +47,17 @@ contract Pod is
     |__________________________________*/
     IERC20Upgradeable public token;
     IERC20Upgradeable public ticket;
-    IERC20Upgradeable public pool;
+    IERC20Upgradeable public reward;
 
     // Initialized Contracts
     TokenFaucet public faucet;
     TokenDrop public drop;
 
-    // Private
-    IPrizePool private _prizePool;
-
     // Manager
     IPodManager public manager;
+
+    // Private
+    IPrizePool private _prizePool;
 
     // Factory
     address public factory;
@@ -66,57 +66,47 @@ contract Pod is
     |   Events                          |
     |__________________________________*/
     /**
-     * @dev Emitted when user deposits into batch backlog.
+     * @dev Emitted when user deposits into Pod float.
      */
     event Deposited(address user, uint256 amount, uint256 shares);
 
     /**
-     * @dev Emitted when user withdraws.
+     * @dev Emitted when user withdraws from the Pod.
      */
     event Withdrawal(address user, uint256 amount, uint256 shares);
 
     /**
-     * @dev Emitted when batch deposit is executed.
+     * @dev Emitted when batch is executed.
      */
-    event Batch(uint256 amount, uint256 timestamp);
+    event Batch(uint256 amount);
 
     /**
-     * @dev Emitted when account sponsers pod.
-     */
-    event Sponsored(address sponsor, uint256 amount);
-
-    /**
-     * @dev Emitted when POOl is claimed for a user.
+     * @dev Emitted when reward asset is claimed by a user.
      */
     event Claimed(address user, uint256 balance);
 
     /**
-     * @dev Emitted when POOl is claimed for the POD.
+     * @dev Emitted when reward asset is claimed by the POD.
      */
     event PodClaimed(uint256 amount);
 
     /**
-     * @dev Emitted when the Pod TokenDrop is set.
+     * @dev Emitted when the Pod TokenDrop is set by manager or factory.
      */
     event TokenDropSet(address drop);
 
     /**
-     * @dev Emitted when a ERC20 is withdrawn.
+     * @dev Emitted when an ERC20 is withdrawn.
      */
-    event ERC20Withdrawn(address target, uint256 tokenId);
+    event ERC20Withdrawn(address target, uint256 amount);
 
     /**
-     * @dev Emitted when a ERC721 is withdrawn.
+     * @dev Emitted when an ERC721 is withdrawn.
      */
     event ERC721Withdrawn(address target, uint256 tokenId);
 
     /**
-     * @dev Emitted when account triggers drop calculation.
-     */
-    event DripCalculate(address account, uint256 amount);
-
-    /**
-     * @dev Emitted when liquidty manager is transfered.
+     * @dev Emitted when Pod manager is transfered.
      */
     event ManagementTransferred(
         address indexed previousmanager,
@@ -133,7 +123,7 @@ contract Pod is
     modifier onlyManager() {
         require(
             address(manager) == _msgSender(),
-            "Manager: caller is not the manager"
+            "Pod: caller is not the manager"
         );
         _;
     }
@@ -150,7 +140,7 @@ contract Pod is
     }
 
     /***********************************|
-    |   Constructor                     |
+    |   Initialize                      |
     |__________________________________*/
 
     /**
@@ -158,7 +148,6 @@ contract Pod is
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
      * @param _prizePoolTarget Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
-     * @param _pool PoolTogether Goverance token - distributed for users with active deposits.
      * @param _faucet TokenFaucet reference that distributes POOL token for deposits
      * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
@@ -166,7 +155,6 @@ contract Pod is
     function initialize(
         address _prizePoolTarget,
         address _ticket,
-        address _pool,
         address _faucet,
         address _manager,
         uint8 _decimals
@@ -174,6 +162,8 @@ contract Pod is
         // Prize Pool
         _prizePool = IPrizePool(_prizePoolTarget);
 
+        // Contract/Inheritance Configuration
+        // ----------------------------------
         // Initialize ERC20Token
         __ERC20_init_unchained(
             string(
@@ -196,24 +186,29 @@ contract Pod is
         // Setup Decimals - Match Underlying Asset
         _setupDecimals(_decimals);
 
-        // Request PrizePool Tickets
+        // Pod Variable/Reference Configuration
+        // ------------------------------------
+
+        // PrizePool Tickets
         address[] memory tickets = _prizePool.tokens();
 
-        // Check if ticket matches existing PrizePool Ticket
+        // Verify ticket matches a PrizePool Ticket
         require(
             address(_ticket) == address(tickets[0]) ||
                 address(_ticket) == address(tickets[1]),
             "Pod:initialize-invalid-ticket"
         );
 
-        // Initialize Core ERC20 Tokens
-        token = IERC20Upgradeable(_prizePool.token());
-        ticket = IERC20Upgradeable(tickets[1]);
-        pool = IERC20Upgradeable(_pool);
+        // Pod > PrizePool > Strategy > TokenFaucet
         faucet = TokenFaucet(_faucet);
 
         // Pod Liquidation Manager
         manager = IPodManager(_manager);
+
+        // Initialize Core ERC20 Tokens
+        token = IERC20Upgradeable(_prizePool.token());
+        ticket = IERC20Upgradeable(_ticket);
+        reward = IERC20Upgradeable(faucet.asset());
 
         // Factory
         factory = msg.sender;
@@ -237,23 +232,23 @@ contract Pod is
      * @dev Update the Pod Manger responsible for handling liquidations.
      * @return bool true
      */
-    function setManager(IPodManager newManager)
+    function setPodManager(IPodManager newManager)
         public
         virtual
         onlyOwner
         returns (bool)
     {
-        // Require Valid Address
+        // Validate Address
         require(
             address(newManager) != address(0),
             "Pod:invalid-manager-address"
         );
 
-        // Emit ManagementTransferred
-        emit ManagementTransferred(address(manager), address(newManager));
-
         // Update Manager
         manager = newManager;
+
+        // Emit ManagementTransferred
+        emit ManagementTransferred(address(manager), address(newManager));
 
         return true;
     }
@@ -285,7 +280,7 @@ contract Pod is
         // Allocate Shares from Deposit To Amount
         uint256 shares = _calculateAllocation(tokenAmount);
 
-        // Transfer Token Transfer Message Sender
+        // Transfer Token tokenAmount to msg.sender
         IERC20Upgradeable(token).safeTransferFrom(
             msg.sender,
             address(this),
@@ -350,7 +345,7 @@ contract Pod is
         require(batchAmount <= tokenBalance, "Pod:insufficient-float-balance");
 
         // Claim outstanding TokenDrop asset for Pod.
-        claimPodPool();
+        claimPodReward();
 
         // Approve Prize Pool
         token.safeApprove(address(_prizePool), batchAmount);
@@ -364,7 +359,7 @@ contract Pod is
         );
 
         // Emit Batch
-        emit Batch(tokenBalance, block.timestamp);
+        emit Batch(tokenBalance);
 
         return true;
     }
@@ -386,7 +381,7 @@ contract Pod is
         require(
             address(_target) != address(token) &&
                 address(_target) != address(ticket) &&
-                address(_target) != address(pool),
+                address(_target) != address(reward),
             "Pod:invalid-target-token"
         );
 
@@ -446,15 +441,18 @@ contract Pod is
      * @dev Claim POOL for PrizePool Pod and adds/transfers those token to the Pod TokenDrop smart contract.
      * @return uint256 claimed amount
      */
-    function claimPodPool() public returns (uint256) {
+    function claimPodReward() public returns (uint256) {
+        // Claim outstanding reward amount from PrizePool TokenFaucet
         faucet.claim(address(this));
-        uint256 balance = pool.balanceOf(address(this));
+
+        // Check Current Pod reward balance
+        uint256 balance = reward.balanceOf(address(this));
 
         if (balance > 0) {
-            // Approve POOL transfer.
-            pool.safeApprove(address(drop), balance);
+            // Approve TokenDrop to withdhaw(transfer) reward balance
+            reward.safeApprove(address(drop), balance);
 
-            // Add POOL to TokenDrop balance
+            // Add reward token to TokenDrop balance
             drop.addAssetToken(balance);
         }
 
@@ -656,8 +654,8 @@ contract Pod is
      * @dev Request's the Pod's current POOL balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current POOL balance.
      */
-    function vaultPoolBalance() public view returns (uint256) {
-        return pool.balanceOf(address(this));
+    function vaultRewardBalance() public view returns (uint256) {
+        return reward.balanceOf(address(this));
     }
 
     /**
@@ -667,6 +665,23 @@ contract Pod is
      */
     function balance() public view returns (uint256) {
         return vaultTokenBalance().add(vaultTicketBalance());
+    }
+
+    /***********************************|
+    |   Administration                  |
+    |__________________________________*/
+
+    /**
+     * @notice Zero out the allowance amount of target address to zero.
+     * @dev The safeApprove method throws an error if an allowance IS NOT zero. If this unentiionally occurs, this function will reset an allowance.
+     * @param _token ERC20 token.
+     * @param _target Address with non-zero allowance.
+     */
+    function emergencyTokenApproveZero(
+        IERC20Upgradeable _token,
+        address _target
+    ) public onlyOwner {
+        _token.safeApprove(_target, 0);
     }
 
     /***********************************|
@@ -692,8 +707,5 @@ contract Pod is
 
         // Update TokenDrop internals
         drop.beforeTokenTransfer(from, to, address(this));
-
-        // Emit DripCalculate
-        emit DripCalculate(from, amount);
     }
 }

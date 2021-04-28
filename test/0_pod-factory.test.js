@@ -66,7 +66,6 @@ describe("PodFactory", function () {
     const tokenDropFactory = testing.podFactory.create(
       prizePool,
       constants.AddressZero,
-      pool,
       faucet,
       constants.AddressZero,
       18
@@ -82,7 +81,6 @@ describe("PodFactory", function () {
     const tokenDropFactoryCallStatic = await testing.podFactory.callStatic.create(
       prizePool,
       ticket,
-      pool,
       faucet,
       constants.AddressZero, // PodLiquidatorManager
       18
@@ -92,7 +90,6 @@ describe("PodFactory", function () {
     const tokenDropFactory = testing.podFactory.create(
       prizePool,
       ticket,
-      pool,
       faucet,
       constants.AddressZero, // PodLiquidatorManager
       18

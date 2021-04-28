@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
+import "hardhat/console.sol";
 // Libraries
 import "./external/ProxyFactory.sol";
 
@@ -37,7 +38,7 @@ contract PodFactory is ProxyFactory {
     |   Events                          |
     |__________________________________*/
     /**
-     * @dev Emitted when use deposits into batch backlog
+     * @dev Emitted when a new Pod and TokenDrop pair is created.
      */
     event LogCreatedPodAndTokenDrop(address pod, address tokenDrop);
 
@@ -62,7 +63,6 @@ contract PodFactory is ProxyFactory {
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
      * @param _prizePoolTarget Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
-     * @param _pool PoolTogether Goverance token - distributed for users with active deposits.
      * @param _faucet TokenFaucet reference that distributes POOL token for deposits
      * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
@@ -71,7 +71,6 @@ contract PodFactory is ProxyFactory {
     function create(
         address _prizePoolTarget,
         address _ticket,
-        address _pool,
         address _faucet,
         address _manager,
         uint8 _decimals
@@ -80,21 +79,15 @@ contract PodFactory is ProxyFactory {
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
         // Pod Initialize
-        pod.initialize(
-            _prizePoolTarget,
-            _ticket,
-            _pool,
-            _faucet,
-            _manager,
-            _decimals
-        );
+        pod.initialize(_prizePoolTarget, _ticket, _faucet, _manager, _decimals);
 
-        // Update Owner
+        // Update Pod owner from factory to msg.sender
         pod.transferOwnership(msg.sender);
 
-        TokenDrop tokenDrop = tokenDropFactory.create(address(pod), _pool);
+        TokenDrop tokenDrop =
+            tokenDropFactory.create(address(pod), address(pod.reward()));
 
-        // TokenDrop Pod Initialize - Add Pod.token() to TokenDrop
+        // Set the Pod TokenDrop reference
         pod.setTokenDrop(address(tokenDrop));
 
         // Emit LogCreatedPodAndTokenDrop
