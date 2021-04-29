@@ -80,14 +80,14 @@ contract PodFactory is ProxyFactory {
         // Pod Initialize
         pod.initialize(_prizePoolTarget, _ticket, _faucet, _manager, _decimals);
 
-        // Update Pod owner from factory to msg.sender
-        pod.transferOwnership(msg.sender);
-
         TokenDrop tokenDrop =
             tokenDropFactory.create(address(pod), address(pod.reward()));
 
         // Set the Pod TokenDrop reference
         pod.setTokenDrop(address(tokenDrop));
+
+        // Update Pod owner from factory to msg.sender
+        pod.transferOwnership(msg.sender);
 
         // Emit LogCreatedPodAndTokenDrop
         emit LogCreatedPodAndTokenDrop(address(pod), address(tokenDrop));

@@ -55,12 +55,6 @@ describe("PodFactory", function () {
     expect(tokenDropFactory).equal(testing.tokenDropFactory.address);
   });
 
-  it("should have correct factory reference in Pod smart contract", async function () {
-    // factory()
-    const factory = await testing.pod.factory();
-    expect(factory).equal(testing.podFactory.address);
-  });
-
   it("should fail to create a new Pod with incorrect ticket", async function () {
     // create()
     const tokenDropFactory = testing.podFactory.create(
@@ -106,9 +100,8 @@ describe("PodFactory", function () {
 
     // setTokenDrop()
     const setTokenDrop = testing.pod.setTokenDrop(testing.token.address);
-    // expect(setTokenDrop).equal(testing.podFactory.address);
     await expect(setTokenDrop).to.be.revertedWith(
-      "Pod:unauthorized-set-token-drop"
+      "Ownable: caller is not the owner"
     );
   });
 

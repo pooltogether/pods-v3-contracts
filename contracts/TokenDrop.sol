@@ -47,9 +47,6 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     /// @notice The timestamp at which the tokens were last dripped
     uint32 public lastDripTimestamp;
 
-    // Factory
-    address public factory;
-
     /***********************************|
     |   Events                          |
     |__________________________________*/
@@ -85,9 +82,6 @@ contract TokenDrop is Initializable, ReentrancyGuard {
         // Set measure/asset tokens.
         measure = IERC20Upgradeable(_measure);
         asset = IERC20Upgradeable(_asset);
-
-        // Set Factory Deployer
-        factory = msg.sender;
     }
 
     /***********************************|
@@ -237,13 +231,5 @@ contract TokenDrop is Initializable, ReentrancyGuard {
         });
 
         return newTokens;
-    }
-
-    function supportsInterface(bytes4 interfaceId)
-        external
-        view
-        returns (bool)
-    {
-        return true;
     }
 }

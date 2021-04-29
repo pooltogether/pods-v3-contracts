@@ -54,13 +54,10 @@ contract Pod is
     TokenDrop public drop;
 
     // Manager
-    IPodManager public manager;
+    address public manager;
 
     // Private
     IPrizePool private _prizePool;
-
-    // Factory
-    address public factory;
 
     /***********************************|
     |   Events                          |
@@ -91,9 +88,14 @@ contract Pod is
     event PodClaimed(uint256 amount);
 
     /**
-     * @dev Emitted when the Pod TokenDrop is set by manager or factory.
+     * @dev Emitted when the Pod TokenDrop is set by owner.
      */
     event TokenDropSet(address drop);
+
+    /**
+     * @dev Emitted when the Pod TokenFaucet is set by owner.
+     */
+    event TokenFaucetSet(address drop);
 
     /**
      * @dev Emitted when an ERC20 is withdrawn.
@@ -121,10 +123,7 @@ contract Pod is
      * @dev Checks is the caller is an active PodManager
      */
     modifier onlyManager() {
-        require(
-            address(manager) == _msgSender(),
-            "Pod: caller is not the manager"
-        );
+        require(manager == _msgSender(), "Pod:manager-unauthorized");
         _;
     }
 
@@ -203,15 +202,12 @@ contract Pod is
         faucet = TokenFaucet(_faucet);
 
         // Pod Liquidation Manager
-        manager = IPodManager(_manager);
+        manager = _manager;
 
         // Initialize Core ERC20 Tokens
         token = IERC20Upgradeable(_prizePool.token());
         ticket = IERC20Upgradeable(_ticket);
         reward = IERC20Upgradeable(faucet.asset());
-
-        // Factory
-        factory = msg.sender;
     }
 
     /***********************************|
@@ -224,7 +220,7 @@ contract Pod is
      * @return address manager
      */
     function podManager() external view returns (address) {
-        return address(manager);
+        return manager;
     }
 
     /**
@@ -232,23 +228,20 @@ contract Pod is
      * @dev Update the Pod Manger responsible for handling liquidations.
      * @return bool true
      */
-    function setPodManager(IPodManager newManager)
+    function setPodManager(address newManager)
         public
         virtual
         onlyOwner
         returns (bool)
     {
         // Validate Address
-        require(
-            address(newManager) != address(0),
-            "Pod:invalid-manager-address"
-        );
+        require(newManager != address(0), "Pod:invalid-manager-address");
 
         // Update Manager
         manager = newManager;
 
         // Emit ManagementTransferred
-        emit ManagementTransferred(address(manager), address(newManager));
+        emit ManagementTransferred(manager, newManager);
 
         return true;
     }
@@ -442,15 +435,18 @@ contract Pod is
      * @return uint256 claimed amount
      */
     function claimPodReward() public returns (uint256) {
+        // Initialize Reference
+        IERC20Upgradeable _reward = reward;
+
         // Claim outstanding reward amount from PrizePool TokenFaucet
         faucet.claim(address(this));
 
         // Check Current Pod reward balance
-        uint256 balance = reward.balanceOf(address(this));
+        uint256 balance = _reward.balanceOf(address(this));
 
         if (balance > 0) {
             // Approve TokenDrop to withdhaw(transfer) reward balance
-            reward.safeApprove(address(drop), balance);
+            _reward.safeApprove(address(drop), balance);
 
             // Add reward token to TokenDrop balance
             drop.addAssetToken(balance);
@@ -468,17 +464,15 @@ contract Pod is
      * @param _tokenDrop TokenDrop address
      * @return bool true
      */
-    function setTokenDrop(address _tokenDrop) external returns (bool) {
-        // Authorized to set TokenDrop smart contract
-        require(
-            msg.sender == factory || msg.sender == owner(),
-            "Pod:unauthorized-set-token-drop"
-        );
-
-        // TokenDrop must be a valid smart contract
+    function setTokenDrop(address _tokenDrop)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        // TokenDrop must be a valid address
         require(_tokenDrop != address(0), "Pod:invalid-drop-contract");
 
-        // Set TokenDrop smart contract instance
+        // Update TokenDrop smart contract instance
         drop = TokenDrop(_tokenDrop);
 
         // Pod Drop asset must batch the PrizePool Faucet asset (i.e.POOL)
@@ -489,6 +483,31 @@ contract Pod is
 
         // Emit TokenDropSet
         emit TokenDropSet(_tokenDrop);
+
+        return true;
+    }
+
+    /**
+     * @notice Setup TokenDrop reference
+     * @dev Initialize the Pod Smart Contact
+     * @param _faucet TokenFaucet address
+     * @return bool true
+     */
+    function setFaucet(address _faucet) external onlyOwner returns (bool) {
+        // TokenFaucet must be a valid address
+        require(_faucet != address(0), "Pod:invalid-faucet-contract");
+
+        // New TokenFaucet.asset must match previously defined TokenFaucet.asset (i.e. reward)
+        require(
+            address(reward) == address(faucet.asset()),
+            "Pod:invalid-reward-token"
+        );
+
+        // Update TokenFaucet address
+        faucet = TokenFaucet(_faucet);
+
+        // Emit TokenDropSet
+        emit TokenFaucetSet(_faucet);
 
         return true;
     }

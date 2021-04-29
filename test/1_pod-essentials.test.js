@@ -82,8 +82,8 @@ describe("Pod", function() {
 
   it("should have the correct reward token", async function() {
     // PoolToken
-    const pool = await testing.pod.reward();
-    expect(pool).equal(config.podDAI.pool);
+    const reward = await testing.pod.reward();
+    expect(reward).equal(config.tokens.POOL);
   });
 
   it("should have 0 pool token", async function() {

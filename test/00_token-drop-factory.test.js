@@ -50,13 +50,13 @@ describe("TokenDropFactory", function() {
   it("should create a new TokenDrop smart contract", async function() {
     const tokenDropAddress = await testing.tokenDropFactory.callStatic.create(
       testing.pod.address,
-      config.podDAI.pool
+      config.tokens.POOL
     );
 
     // Event LogCreateTokenDrop(address tokenDrop)
     const createTokenDrop = await testing.tokenDropFactory.create(
       testing.pod.address,
-      config.podDAI.pool
+      config.tokens.POOL
     );
 
     // Transaction Receipt

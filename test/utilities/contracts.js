@@ -48,7 +48,7 @@ const createPeripheryContract = async (testing, config) => {
   // Set Pool
   testing.pool = await ethers.getContractAt(
     "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
-    config.podDAI.pool
+    config.tokens.POOL
   );
 
   // Set Ticket
