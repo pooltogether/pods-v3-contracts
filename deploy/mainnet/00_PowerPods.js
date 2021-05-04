@@ -21,9 +21,9 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       "create",
       CONFIG.podDAI.prizePool,
       CONFIG.podDAI.ticket,
-      CONFIG.tokens.POOL,
       CONFIG.podDAI.faucet,
-      deployer
+      deployer,
+      18
     );
 
     await getPodAndDropAddress(createDAI.transactionHash, deployments, "DAI");
@@ -36,9 +36,9 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       "create",
       CONFIG.podUSDC.prizePool,
       CONFIG.podUSDC.ticket,
-      CONFIG.tokens.POOL,
       CONFIG.podUSDC.faucet,
-      deployer
+      deployer,
+      18
     );
 
     await getPodAndDropAddress(createUSDC.transactionHash, deployments, "USDC");
@@ -51,9 +51,9 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       "create",
       CONFIG.podUNI.prizePool,
       CONFIG.podUNI.ticket,
-      CONFIG.tokens.POOL,
       CONFIG.podUNI.faucet,
-      deployer
+      deployer,
+      6
     );
 
     await getPodAndDropAddress(createUNI.transactionHash, deployments, "UNI");
@@ -66,9 +66,9 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       "create",
       CONFIG.podCOMP.prizePool,
       CONFIG.podCOMP.ticket,
-      CONFIG.tokens.POOL,
       CONFIG.podCOMP.faucet,
-      deployer
+      deployer,
+      18
     );
 
     await getPodAndDropAddress(createCOMP.transactionHash, deployments, "COMP");
