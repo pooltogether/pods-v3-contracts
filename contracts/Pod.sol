@@ -46,15 +46,14 @@ contract Pod is
     /***********************************|
     |   Constants                       |
     |__________________________________*/
+    // Public
     IERC20Upgradeable public token;
     IERC20Upgradeable public ticket;
     IERC20Upgradeable public reward;
 
-    // Manager
-    address public manager;
-
-    // Pod Drops
+    TokenFaucet public faucet;
     TokenDrop public tokenDrop;
+    address public manager;
 
     // Private
     IPrizePool private _prizePool;
@@ -147,14 +146,14 @@ contract Pod is
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
      * @param _prizePoolTarget Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
-     * @param _tokenDrop TokenDrop for managing reward token.
+     * @param _faucet TokenDrop for managing reward token.
      * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
      */
     function initialize(
         address _prizePoolTarget,
         address _ticket,
-        address _tokenDrop,
+        address _faucet,
         address _manager,
         uint8 _decimals
     ) external initializer {
@@ -202,34 +201,16 @@ contract Pod is
         token = IERC20Upgradeable(_prizePool.token());
         ticket = IERC20Upgradeable(_ticket);
 
+        // Pod TokenDrop (optional)
+        faucet = TokenFaucet(_faucet);
+
         // Pod Liquidation Manager
         manager = _manager;
-
-        // Pod TokenDrop (optional)
-        tokenDrop = TokenDrop(_tokenDrop);
     }
 
     /***********************************|
     |   Public/External                 |
     |__________________________________*/
-
-    /**
-     * @notice The Pod manager address.
-     * @dev Returns the address of the current Pod manager.
-     * @return address manager
-     */
-    function podManager() external view returns (address) {
-        return manager;
-    }
-
-    /**
-     * @notice The Pod PrizePool reference
-     * @dev Returns the address of the Pod prizepool
-     * @return address The Pod prizepool
-     */
-    function prizePool() external view override returns (address) {
-        return address(_prizePool);
-    }
 
     /**
      * @notice Deposit assets into the Pod in exchange for share tokens
@@ -324,11 +305,14 @@ contract Pod is
     }
 
     /**
-     * @notice Claims POOL for PrizePool Pod deposits
-     * @dev Claim POOL for PrizePool Pod and adds/transfers those token to the Pod TokenDrop smart contract.
+     * @notice Claims TokenDrop asset for PrizePool Pod deposits
+     * @dev Claim TokenDrop asset for PrizePool Pod and transfers token(s) to external Pod TokenDrop.
      * @return uint256 claimed amount
      */
-    function drop() public returns (uint256) {
+    function drop(bool claimReward) public returns (uint256) {
+        if (claimReward) {
+            faucet.claim(address(this));
+        }
         // Run batch and reduce Pod Float to zero.
         batch();
 
@@ -344,7 +328,7 @@ contract Pod is
         // Add reward token to TokenDrop balance
         tokenDrop.addAssetToken(balance);
 
-        // Emit PodClaimedJus
+        // Emit PodClaimed
         emit PodClaimed(balance);
 
         return balance;
@@ -369,6 +353,59 @@ contract Pod is
 
         // Emit ManagementTransferred
         emit ManagementTransferred(manager, newManager);
+
+        return true;
+    }
+
+    /**
+     * @notice Setup TokenDrop reference
+     * @dev Initialize the Pod Smart Contact
+     * @param _tokenDrop TokenDrop address
+     * @return bool true
+     */
+    function setTokenDrop(address _tokenDrop)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        // TokenDrop must be a valid smart contract
+        require(_tokenDrop != address(0), "Pod:invalid-token-drop-contract");
+
+        // Set TokenDrop smart contract instance
+        tokenDrop = TokenDrop(_tokenDrop);
+
+        // Pod Drop asset must batch the PrizePool Faucet asset (i.e.POOL)
+        require(
+            address(tokenDrop.asset()) == address(faucet.asset()),
+            "Pod:invalid-token-drop-asset"
+        );
+
+        // Emit TokenDropSet
+        emit TokenDropSet(_tokenDrop);
+
+        return true;
+    }
+
+    /**
+     * @notice Set TokenFaucet reference
+     * @dev Set TokenFaucet reference (if prizepool faucet is updated)
+     * @param _faucet TokenDrop address
+     * @return bool true
+     */
+    function setTokenFaucet(address _faucet) external onlyOwner returns (bool) {
+        require(_faucet != address(0), "Pod:invalid-faucet-contract");
+
+        // Set TokenFaucet
+        faucet = TokenFaucet(_faucet);
+
+        // Pod TokenDrop asset must batch the PrizePool Faucet asset (i.e.POOL)
+        require(
+            address(tokenDrop.asset()) == address(faucet.asset()),
+            "Pod:invalid-token-faucet-asset"
+        );
+
+        // Emit TokenFaucetSet
+        emit TokenFaucetSet(_faucet);
 
         return true;
     }
@@ -530,6 +567,24 @@ contract Pod is
     |__________________________________*/
 
     /**
+     * @notice The Pod manager address.
+     * @dev Returns the address of the current Pod manager.
+     * @return address manager
+     */
+    function podManager() external view returns (address) {
+        return manager;
+    }
+
+    /**
+     * @notice The Pod PrizePool reference
+     * @dev Returns the address of the Pod prizepool
+     * @return address The Pod prizepool
+     */
+    function prizePool() external view override returns (address) {
+        return address(_prizePool);
+    }
+
+    /**
      * @notice Calculate the cost of withdrawing from the Pod if the
      * @param amount Amount of tokens to withdraw when calculating early exit fee.
      * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
@@ -639,7 +694,7 @@ contract Pod is
         // Call _beforeTokenTransfer from contract inheritance
         super._beforeTokenTransfer(from, to, amount);
 
-        // If Pod is setup with a TokenDrop update calculated balances.
+        // If Pod TokenDrop is initalized update calculated balances.
         if (address(tokenDrop) != address(0)) {
             tokenDrop.beforeTokenTransfer(from, to, address(this));
         }

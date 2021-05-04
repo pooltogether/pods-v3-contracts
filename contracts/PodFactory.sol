@@ -77,21 +77,27 @@ contract PodFactory is ProxyFactory {
         // Pod Deploy
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
-        address _drop;
+        // Pod Initialize
+        pod.initialize(
+            _prizePool,
+            _ticket,
+            address(_faucet),
+            _manager,
+            _decimals
+        );
 
         // Governance managed PrizePools include TokenFaucets, which "drip" an asset token.
         // Community managed PrizePools might NOT have a TokenFaucet, and thus don't require a TokenDrop.
+        address _drop;
         if (address(_faucet) != address(0)) {
             _drop = tokenDropFactory.create(
                 address(pod),
                 address(_faucet.asset())
             );
-        } else {
-            _drop = address(0);
-        }
 
-        // Pod Initialize
-        pod.initialize(_prizePool, _ticket, _drop, _manager, _decimals);
+            // Set Pod TokenDrop
+            pod.setTokenDrop(_drop);
+        }
 
         // Update Pod owner from factory to msg.sender
         pod.transferOwnership(msg.sender);
