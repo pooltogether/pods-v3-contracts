@@ -41,6 +41,24 @@ const networks = {
       ticket: "0xaa826545db0e04da9bb5542692eb31b439ba7175",
       faucet: "0x699995E4b039713b3824d039CcdFCa154D9aBD4c",
     },
+    podUSDC: {
+      prizePool: "0xde5275536231eCa2Dd506B9ccD73C028e16a9a32",
+      token: "0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b",
+      ticket: "0xb03DC163f2BECDd6Fa3f44deF57e28F1Ba95F741",
+      faucet: "0xeAbd4780f4e8508F7df5A736Bc1AE2bD74523acB",
+    },
+    podBAT: {
+      prizePool: "0xab068F220E10eEd899b54F1113dE7E354c9A8eB7",
+      token: "0xbf7a7169562078c96f0ec1a8afd6ae50f12e5a99",
+      ticket: "0xd5eE7cD7A97ccBbf2B1Fb2c92C19515a41720eA5",
+      faucet: "0x97B99693613aaA74A3fa0B2f05378b8F6A74a893",
+    },
+    podUSDT: {
+      prizePool: "0xDCB24C5C96D3D0677add5B688DCD144601410244",
+      token: "0xd9ba894e0097f8cc2bbc9d24d308b98e36dc6d02",
+      ticket: "0xeC9c462378Ce6a5f387AB81cd775226a9fd960e9",
+      faucet: "",
+    },
   },
 
   // MAINNET CONFIGURATION

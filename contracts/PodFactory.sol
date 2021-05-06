@@ -62,7 +62,7 @@ contract PodFactory is ProxyFactory {
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
      * @param _prizePool Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
-     * @param _faucet  TokenFaucet reference that distributes reward token for PrizePool deposits.
+     * @param _faucet  TokenFaucet address that distributes reward token for PrizePool deposits.
      * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
      * @return (address, address) Pod and TokenDrop addresses
@@ -70,7 +70,7 @@ contract PodFactory is ProxyFactory {
     function create(
         address _prizePool,
         address _ticket,
-        TokenFaucet _faucet,
+        address _faucet,
         address _manager,
         uint8 _decimals
     ) external returns (address, address) {
@@ -78,22 +78,22 @@ contract PodFactory is ProxyFactory {
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
         // Pod Initialize
-        pod.initialize(
-            _prizePool,
-            _ticket,
-            address(_faucet),
-            _manager,
-            _decimals
-        );
+        pod.initialize(_prizePool, _ticket, _manager, _decimals);
 
         // Governance managed PrizePools include TokenFaucets, which "drip" an asset token.
         // Community managed PrizePools might NOT have a TokenFaucet, and thus don't require a TokenDrop.
         address _drop;
         if (address(_faucet) != address(0)) {
+            TokenFaucet faucet = TokenFaucet(_faucet);
+
+            // Create TokenDrop instance
             _drop = tokenDropFactory.create(
                 address(pod),
-                address(_faucet.asset())
+                address(faucet.asset())
             );
+
+            // Set Pod TokenFacuet
+            pod.setTokenFaucet(_faucet);
 
             // Set Pod TokenDrop
             pod.setTokenDrop(_drop);

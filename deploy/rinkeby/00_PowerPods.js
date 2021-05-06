@@ -9,11 +9,9 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const chainId = await getChainId();
 
   // Check ChainID (Rinkeby)
-  console.log(chainId, 'chainId')
   if (chainId == 4) {
     const CONFIG = getConfig("rinkeby");
 
-    // Create DAI Pod
     const createDAI = await execute(
       "PodFactory",
       {
@@ -22,13 +20,41 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       "create",
       CONFIG.podDAI.prizePool,
       CONFIG.podDAI.ticket,
-      '0xdD1cba915Be9c7a1e60c4B99DADE1FC49F67f80D', // test token
       CONFIG.podDAI.faucet,
-      deployer
+      deployer,
+      18
     );
-
-    await getPodAndDropAddress(createDAI.transactionHash, deployments, "rDAI");
+    
+    const createUSDC = await execute(
+      "PodFactory",
+      {
+        from: deployer,
+      },
+      "create",
+      CONFIG.podUSDC.prizePool,
+      CONFIG.podUSDC.ticket,
+      CONFIG.podUSDC.faucet,
+      deployer,
+      6
+    );
+    
+    const createBAT = await execute(
+      "PodFactory",
+      {
+        from: deployer,
+      },
+      "create",
+      CONFIG.podBAT.prizePool,
+      CONFIG.podBAT.ticket,
+      CONFIG.podBAT.faucet,
+      deployer,
+      18
+    );
+   
+    await getPodAndDropAddress(createDAI.transactionHash, deployments, "DAI");
+    await getPodAndDropAddress(createUSDC.transactionHash, deployments, "USDC");
+    await getPodAndDropAddress(createBAT.transactionHash, deployments, "BAT");
   }
 };
 
-module.exports.tags = ["Factories"];
+module.exports.tags = ["Pods"];
