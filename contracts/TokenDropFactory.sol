@@ -40,7 +40,7 @@ contract TokenDropFactory is ProxyFactory {
      */
     function create(address _measure, address _asset)
         external
-        returns (TokenDrop)
+        returns (address)
     {
         // TokenDrop Deployed
         TokenDrop tokenDrop =
@@ -50,6 +50,6 @@ contract TokenDropFactory is ProxyFactory {
         tokenDrop.initialize(_measure, _asset);
 
         // Return TokenDrop addresses
-        return tokenDrop;
+        return address(tokenDrop);
     }
 }

@@ -4,12 +4,15 @@ require("@nomiclabs/hardhat-waffle");
 require("hardhat-log-remover");
 require("hardhat-deploy");
 require("solidity-coverage");
-require("./hardhat.helpers");
 const networks = require("./hardhat.networks");
+
+// Tasks
+require("./hardhat/hardhat.development");
+require("./hardhat/hardhat.uniswap");
 
 // Hardhat Configuration
 module.exports = {
-  defaultNetwork: "hardhat",
+  defaultNetwork: "localhost",
   namedAccounts: {
     deployer: {
       default: 0,
