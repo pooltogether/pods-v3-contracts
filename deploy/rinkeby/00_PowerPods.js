@@ -9,25 +9,66 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const chainId = await getChainId();
 
   // Check ChainID (Rinkeby)
-  console.log(chainId, 'chainId')
   if (chainId == 4) {
     const CONFIG = getConfig("rinkeby");
 
     // Create DAI Pod
-    const createDAI = await execute(
+    // const createDAI = await execute(
+    //   "PodFactory",
+    //   {
+    //     from: deployer,
+    //   },
+    //   "create",
+    //   CONFIG.podDAI.prizePool,
+    //   CONFIG.podDAI.ticket,
+    //   CONFIG.podDAI.faucet,
+    //   deployer,
+    //   18
+    // );
+    
+    const createUSDC = await execute(
       "PodFactory",
       {
         from: deployer,
       },
       "create",
-      CONFIG.podDAI.prizePool,
-      CONFIG.podDAI.ticket,
-      '0xdD1cba915Be9c7a1e60c4B99DADE1FC49F67f80D', // test token
-      CONFIG.podDAI.faucet,
-      deployer
+      CONFIG.podUSDC.prizePool,
+      CONFIG.podUSDC.ticket,
+      CONFIG.podUSDC.faucet,
+      deployer,
+      6
     );
+    
+    // const createBAT = await execute(
+    //   "PodFactory",
+    //   {
+    //     from: deployer,
+    //   },
+    //   "create",
+    //   CONFIG.podBAT.prizePool,
+    //   CONFIG.podBAT.ticket,
+    //   CONFIG.podBAT.faucet,
+    //   deployer,
+    //   18
+    // );
+   
+    // const createUSDT = await execute(
+    //   "PodFactory",
+    //   {
+    //     from: deployer,
+    //   },
+    //   "create",
+    //   CONFIG.podUSDT.prizePool,
+    //   CONFIG.podUSDT.ticket,
+    //   CONFIG.podUSDT.faucet,
+    //   deployer,
+    //   18
+    // );
 
-    await getPodAndDropAddress(createDAI.transactionHash, deployments, "rDAI");
+    // await getPodAndDropAddress(createDAI.transactionHash, deployments, "rDAI");
+    await getPodAndDropAddress(createUSDC.transactionHash, deployments, "rUSDC");
+    // await getPodAndDropAddress(createBAT.transactionHash, deployments, "rBAT");
+    // await getPodAndDropAddress(createUSDT.transactionHash, deployments, "rUSDT");
   }
 };
 
