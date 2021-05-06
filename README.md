@@ -1,6 +1,6 @@
 # Pods (PoolTogether)
 
-[![Coverage Status](https://coveralls.io/repos/github/kamescg/pods/badge.svg?branch=master)](https://coveralls.io/github/kamescg/pods?branch=master)
+[![<PoolTogether>](https://circleci.com/gh/kamescg/pods.svg?style=shield)](https://circleci.com/gh/kamescg/pods) [![Coverage Status](https://coveralls.io/repos/github/kamescg/pods/badge.svg?branch=master)](https://coveralls.io/github/kamescg/pods?branch=master)
 
 The Pods smart contracts are a periphery smart contract collection for PoolTogether
 
