@@ -49,7 +49,6 @@ contract Pod is
     // Public
     IERC20Upgradeable public token;
     IERC20Upgradeable public ticket;
-    IERC20Upgradeable public reward;
 
     TokenFaucet public faucet;
     TokenDrop public tokenDrop;
@@ -146,14 +145,12 @@ contract Pod is
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
      * @param _prizePoolTarget Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
-     * @param _faucet TokenDrop for managing reward token.
      * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
      */
     function initialize(
         address _prizePoolTarget,
         address _ticket,
-        address _faucet,
         address _manager,
         uint8 _decimals
     ) external initializer {
@@ -200,9 +197,6 @@ contract Pod is
         // Initialize Core ERC20 Tokens
         token = IERC20Upgradeable(_prizePool.token());
         ticket = IERC20Upgradeable(_ticket);
-
-        // Pod TokenDrop (optional)
-        faucet = TokenFaucet(_faucet);
 
         // Pod Liquidation Manager
         manager = _manager;
@@ -309,11 +303,13 @@ contract Pod is
      * @dev Claim TokenDrop asset for PrizePool Pod and transfers token(s) to external Pod TokenDrop.
      * @return uint256 claimed amount
      */
-    function drop(bool claimReward) public returns (uint256) {
-        if (claimReward) {
+    function drop() public returns (uint256) {
+        // Claim asset from TokenFaucet if active
+        if (address(faucet) != address(0)) {
             faucet.claim(address(this));
         }
-        // Run batch and reduce Pod Float to zero.
+
+        // Run batch (to eliminate "sandwich" attack) and reduce Pod float to zero.
         batch();
 
         // TokenDrop Asset
@@ -322,11 +318,14 @@ contract Pod is
         // Pod asset balance
         uint256 balance = _asset.balanceOf(address(this));
 
-        // Approve TokenDrop to withdraw(transfer) reward balance
-        _asset.safeApprove(address(tokenDrop), balance);
+        // Only Transfer asset to TokenDrop if balance above 0
+        if (balance > 0) {
+            // Approve TokenDrop to withdraw(transfer) reward balance
+            _asset.safeApprove(address(tokenDrop), balance);
 
-        // Add reward token to TokenDrop balance
-        tokenDrop.addAssetToken(balance);
+            // Add reward token to TokenDrop balance
+            tokenDrop.addAssetToken(balance);
+        }
 
         // Emit PodClaimed
         emit PodClaimed(balance);
@@ -358,6 +357,24 @@ contract Pod is
     }
 
     /**
+     * @notice Set TokenFaucet reference
+     * @dev Set TokenFaucet reference (if prizepool faucet is updated)
+     * @param _faucet TokenDrop address
+     * @return bool true
+     */
+    function setTokenFaucet(address _faucet) external onlyOwner returns (bool) {
+        require(_faucet != address(0), "Pod:invalid-faucet-contract");
+
+        // Set TokenFaucet
+        faucet = TokenFaucet(_faucet);
+
+        // Emit TokenFaucetSet
+        emit TokenFaucetSet(_faucet);
+
+        return true;
+    }
+
+    /**
      * @notice Setup TokenDrop reference
      * @dev Initialize the Pod Smart Contact
      * @param _tokenDrop TokenDrop address
@@ -374,38 +391,8 @@ contract Pod is
         // Set TokenDrop smart contract instance
         tokenDrop = TokenDrop(_tokenDrop);
 
-        // Pod Drop asset must batch the PrizePool Faucet asset (i.e.POOL)
-        require(
-            address(tokenDrop.asset()) == address(faucet.asset()),
-            "Pod:invalid-token-drop-asset"
-        );
-
         // Emit TokenDropSet
         emit TokenDropSet(_tokenDrop);
-
-        return true;
-    }
-
-    /**
-     * @notice Set TokenFaucet reference
-     * @dev Set TokenFaucet reference (if prizepool faucet is updated)
-     * @param _faucet TokenDrop address
-     * @return bool true
-     */
-    function setTokenFaucet(address _faucet) external onlyOwner returns (bool) {
-        require(_faucet != address(0), "Pod:invalid-faucet-contract");
-
-        // Set TokenFaucet
-        faucet = TokenFaucet(_faucet);
-
-        // Pod TokenDrop asset must batch the PrizePool Faucet asset (i.e.POOL)
-        require(
-            address(tokenDrop.asset()) == address(faucet.asset()),
-            "Pod:invalid-token-faucet-asset"
-        );
-
-        // Emit TokenFaucetSet
-        emit TokenFaucetSet(_faucet);
 
         return true;
     }
@@ -653,15 +640,6 @@ contract Pod is
      */
     function vaultTicketBalance() public view returns (uint256) {
         return ticket.balanceOf(address(this));
-    }
-
-    /**
-     * @notice Pod current POOL balance.
-     * @dev Request's the Pod's current POOL balance by calling balanceOf(address(this)).
-     * @return uint256 Pod's current POOL balance.
-     */
-    function vaultRewardBalance() public view returns (uint256) {
-        return reward.balanceOf(address(this));
     }
 
     /**

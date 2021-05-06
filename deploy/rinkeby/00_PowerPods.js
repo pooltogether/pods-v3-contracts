@@ -12,19 +12,18 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   if (chainId == 4) {
     const CONFIG = getConfig("rinkeby");
 
-    // Create DAI Pod
-    // const createDAI = await execute(
-    //   "PodFactory",
-    //   {
-    //     from: deployer,
-    //   },
-    //   "create",
-    //   CONFIG.podDAI.prizePool,
-    //   CONFIG.podDAI.ticket,
-    //   CONFIG.podDAI.faucet,
-    //   deployer,
-    //   18
-    // );
+    const createDAI = await execute(
+      "PodFactory",
+      {
+        from: deployer,
+      },
+      "create",
+      CONFIG.podDAI.prizePool,
+      CONFIG.podDAI.ticket,
+      CONFIG.podDAI.faucet,
+      deployer,
+      18
+    );
     
     const createUSDC = await execute(
       "PodFactory",
@@ -39,37 +38,23 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       6
     );
     
-    // const createBAT = await execute(
-    //   "PodFactory",
-    //   {
-    //     from: deployer,
-    //   },
-    //   "create",
-    //   CONFIG.podBAT.prizePool,
-    //   CONFIG.podBAT.ticket,
-    //   CONFIG.podBAT.faucet,
-    //   deployer,
-    //   18
-    // );
+    const createBAT = await execute(
+      "PodFactory",
+      {
+        from: deployer,
+      },
+      "create",
+      CONFIG.podBAT.prizePool,
+      CONFIG.podBAT.ticket,
+      CONFIG.podBAT.faucet,
+      deployer,
+      18
+    );
    
-    // const createUSDT = await execute(
-    //   "PodFactory",
-    //   {
-    //     from: deployer,
-    //   },
-    //   "create",
-    //   CONFIG.podUSDT.prizePool,
-    //   CONFIG.podUSDT.ticket,
-    //   CONFIG.podUSDT.faucet,
-    //   deployer,
-    //   18
-    // );
-
-    // await getPodAndDropAddress(createDAI.transactionHash, deployments, "rDAI");
-    await getPodAndDropAddress(createUSDC.transactionHash, deployments, "rUSDC");
-    // await getPodAndDropAddress(createBAT.transactionHash, deployments, "rBAT");
-    // await getPodAndDropAddress(createUSDT.transactionHash, deployments, "rUSDT");
+    await getPodAndDropAddress(createDAI.transactionHash, deployments, "DAI");
+    await getPodAndDropAddress(createUSDC.transactionHash, deployments, "USDC");
+    await getPodAndDropAddress(createBAT.transactionHash, deployments, "BAT");
   }
 };
 
-module.exports.tags = ["Factories"];
+module.exports.tags = ["Pods"];
