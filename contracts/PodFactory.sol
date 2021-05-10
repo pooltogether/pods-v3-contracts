@@ -28,11 +28,6 @@ contract PodFactory is ProxyFactory {
      */
     Pod public podInstance;
 
-    /**
-     * @notice Contract template for deploying proxied TokenDrop
-     */
-    TokenDrop public tokenDropInstance;
-
     /***********************************|
     |   Events                          |
     |__________________________________*/
