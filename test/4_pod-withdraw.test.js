@@ -100,16 +100,13 @@ describe("Pod - Withdraw", function () {
 
     // Check All Events
     expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
-      "DripCalculate"
+      "Transfer"
     );
     expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
       "Transfer"
     );
     expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
-      "Transfer"
-    );
-    expect(testing.pod.interface.parseLog(receipt.logs[3]).name).to.equal(
-      "Withdrawl"
+      "Withdrawal"
     );
   });
 
@@ -125,17 +122,6 @@ describe("Pod - Withdraw", function () {
 
     // batch()
     const batch = await testing.pod.batch(utils.parseEther("1000"));
-
-    // getTransactionReceipt(batch.hash)
-    let receiptBatch = await provider.getTransactionReceipt(batch.hash);
-
-    // Check Pod Specific Events
-    // expect(testing.pod.interface.parseLog(receiptBatch.logs[6]).name).to.equal(
-    //   "PodClaimed"
-    // );
-    // expect(testing.pod.interface.parseLog(receiptBatch.logs[18]).name).to.equal(
-    //   "Batch"
-    // );
 
     // balanceOf()
     const balanceOf = await testing.pod.balanceOf(testing.owner.address);
@@ -165,13 +151,10 @@ describe("Pod - Withdraw", function () {
 
     // Check All Events
     expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
-      "DripCalculate"
-    );
-    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
       "Transfer"
     );
-    expect(testing.pod.interface.parseLog(receipt.logs[16]).name).to.equal(
-      "Withdrawl"
+    expect(testing.pod.interface.parseLog(receipt.logs[14]).name).to.equal(
+      "Withdrawal"
     );
   });
 });

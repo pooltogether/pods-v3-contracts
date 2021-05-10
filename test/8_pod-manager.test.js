@@ -43,7 +43,7 @@ describe("PodManager", function() {
     testing.pod = await ethers.getContractAt("Pod", pod);
     testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDrop);
 
-    await testing.pod.setManager(testing.podManager.address);
+    await testing.pod.setPodManager(testing.podManager.address);
   });
 
   /************************************|
@@ -78,7 +78,7 @@ describe("PodManager", function() {
       );
 
       // setManager()
-      await testing.pod.setManager(testing.owner.address);
+      await testing.pod.setPodManager(testing.owner.address);
 
       // withdrawERC20()
       expect(
@@ -97,7 +97,7 @@ describe("PodManager", function() {
         utils.parseUnits("1000", 6)
       );
 
-      await testing.pod.setManager(testing.owner.address);
+      await testing.pod.setPodManager(testing.owner.address);
 
       // withdrawERC20()
       await testing.pod.withdrawERC20(
@@ -158,7 +158,7 @@ describe("PodManager", function() {
       expect(tokenOwnerBeforeWithdraw).to.equal(testing.pod.address);
 
       // setManager()
-      await testing.pod.setManager(testing.owner.address);
+      await testing.pod.setPodManager(testing.owner.address);
 
       // withdrawCollectible() - Withdraw NFT from Pod
       const liquidate = testing.pod.withdrawERC721(testing.podNFT.address, 1);

@@ -9,24 +9,15 @@ const setupContractFactories = async (testing) => {
   );
   testing.POD_MANAGER = await ethers.getContractFactory("PodManager");
   testing.ERC20 = await ethers.getContractFactory(
-    "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
+    "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
   );
-
-  // Deploy PodManager Smart Contract
-  // testing.podManager = await testing.POD_MANAGER.deploy();
-
-  // // Deploy PodFactory Smart Contract
-  // testing.tokenDropFactory = await testing.TOKEN_DROP_FACTORY.deploy();
-  // testing.podFactory = await testing.POD_FACTORY.deploy(
-  //   testing.tokenDropFactory.address
-  // );
 
   return testing;
 };
 
 const setupSigners = async (testing) => {
   testing.provider = new ethers.providers.JsonRpcProvider(
-    "http://127.0.0.1:8543/"
+    "http://127.0.0.1:8545/"
   );
 
   testing.signers = await ethers.getSigners();
@@ -41,19 +32,19 @@ const setupSigners = async (testing) => {
 const createPeripheryContract = async (testing, config) => {
   // Set Token
   testing.token = await ethers.getContractAt(
-    "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
+    "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
     config.podDAI.token
   );
 
   // Set Pool
   testing.pool = await ethers.getContractAt(
-    "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
-    config.podDAI.pool
+    "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
+    config.tokens.POOL
   );
 
   // Set Ticket
   testing.ticket = await ethers.getContractAt(
-    "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
+    "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
     config.podDAI.ticket
   );
 
@@ -85,7 +76,6 @@ const createPodAndTokenDrop = async (testing, config) => {
   testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
     config.podDAI.prizePool,
     config.podDAI.ticket,
-    config.podDAI.pool,
     config.podDAI.faucet,
     testing.podManager.address,
     18
@@ -95,7 +85,6 @@ const createPodAndTokenDrop = async (testing, config) => {
   testing.pod_and_tokendrop_create = await testing.podFactory.create(
     config.podDAI.prizePool,
     config.podDAI.ticket,
-    config.podDAI.pool,
     config.podDAI.faucet,
     testing.podManager.address,
     18
@@ -141,7 +130,6 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
   testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
     config.prizePool,
     config.ticket,
-    config.pool,
     config.faucet,
     testing.podManager.address,
     18
@@ -151,7 +139,6 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
   testing.pod_and_tokendrop_create = await testing.podFactory.create(
     config.prizePool,
     config.ticket,
-    config.pool,
     config.faucet,
     testing.podManager.address,
     18

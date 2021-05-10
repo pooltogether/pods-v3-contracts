@@ -5,10 +5,6 @@ const { expect } = require("chai");
 
 require("./helpers/chaiMatchers");
 const { getConfig } = require("../lib/config");
-const { purchaseToken } = require("../lib/uniswap");
-const { isTransactionMined } = require("./utilities/transactions");
-const { advanceTimeAndBlock } = require("./utilities/time");
-const { toWei } = require("./utilities/bignumbers");
 const {
   setupSigners,
   createPodAndTokenDrop,
@@ -50,13 +46,13 @@ describe("TokenDropFactory", function() {
   it("should create a new TokenDrop smart contract", async function() {
     const tokenDropAddress = await testing.tokenDropFactory.callStatic.create(
       testing.pod.address,
-      config.podDAI.pool
+      config.tokens.POOL
     );
 
     // Event LogCreateTokenDrop(address tokenDrop)
     const createTokenDrop = await testing.tokenDropFactory.create(
       testing.pod.address,
-      config.podDAI.pool
+      config.tokens.POOL
     );
 
     // Transaction Receipt

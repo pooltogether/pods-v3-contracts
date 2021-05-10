@@ -37,7 +37,7 @@ interface IPod is IERC20Upgradeable {
 
     /// @notice Allows someone to batch deposit funds into the underlying prize pool.  This should be called periodically.
     /// @dev This function should deposit the float into the prize pool, and claim any POOL tokens and distribute to users (possibly via adaptation of Token Faucet)
-    function batch(uint256 batchAmount) external returns (bool);
+    function batch() external returns (uint256);
 
     /// @notice Allows the owner of the Pod or the asset manager to withdraw tokens from the Pod.
     /// @dev This function should disallow the withdrawal of tickets or POOL to prevent users from being rugged.
@@ -55,5 +55,5 @@ interface IPod is IERC20Upgradeable {
         returns (bool);
 
     /// @notice Allows a user to claim POOL tokens for an address.  The user will be transferred their share of POOL tokens.
-    function claim(address user) external returns (uint256);
+    // function claim(address user) external returns (uint256);
 }

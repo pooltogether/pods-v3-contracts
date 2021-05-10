@@ -64,16 +64,13 @@ describe("Pod - Deposit", function () {
     let receipt = await provider.getTransactionReceipt(depositTo.hash);
 
     // Check All Events
-    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
-      "DripCalculate"
-    );
     expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
       "Transfer"
     );
-    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
+    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
       "Transfer"
     );
-    expect(testing.pod.interface.parseLog(receipt.logs[3]).name).to.equal(
+    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
       "Deposited"
     );
   });
@@ -92,16 +89,13 @@ describe("Pod - Deposit", function () {
     let receipt = await provider.getTransactionReceipt(depositTo.hash);
 
     // Check All Events
-    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
-      "DripCalculate"
-    );
     expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
       "Transfer"
     );
-    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
+    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
       "Transfer"
     );
-    expect(testing.pod.interface.parseLog(receipt.logs[3]).name).to.equal(
+    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
       "Deposited"
     );
 

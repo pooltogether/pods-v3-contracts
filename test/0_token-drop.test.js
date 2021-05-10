@@ -74,17 +74,7 @@ describe("TokenDrop", function() {
     expect(userStates[0].toString()).to.equal("0");
   });
 
-  it("should check interface support", async function() {
-    // exchangeRateMantissa()
-    const supportsInterface = await testing.drop.supportsInterface(
-      "0xffffffff"
-    );
-    expect(supportsInterface).to.equal(true);
-  });
-
   it("should initialize new TokenDrop smart contract", async function() {
-    // approve()
-    const balanceOf = await testing.pool.balanceOf(testing.owner.address);
 
     // approve()
     await testing.pool.approve(

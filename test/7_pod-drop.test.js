@@ -142,7 +142,7 @@ describe("Pod - Drops", function () {
     await testing.pod.batch(testing.token.balanceOf(testing.pod.address));
 
     // claimPodPool() callStatic
-    const claimPoolStaticPreBatch = await testing.pod.callStatic.claimPodPool();
+    const claimPoolStaticPreBatch = await testing.pod.callStatic.claimPodReward();
 
     // Expect 0 POOL rewards
     expect(claimPoolStaticPreBatch.toString()).equal("0");
@@ -151,7 +151,7 @@ describe("Pod - Drops", function () {
     await advanceTimeAndBlock(2592000);
 
     // claimPodPool() - Claim POOL for Pod
-    await testing.pod.claimPodPool();
+    await testing.pod.claimPodReward();
 
     // Advance 1 Month
     await advanceTimeAndBlock(2592000);
@@ -252,7 +252,7 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(2592000);
 
       // claimPodPool() callStatic
-      const claimPoolStaticPreBatch = await testing.pod.callStatic.claimPodPool();
+      const claimPoolStaticPreBatch = await testing.pod.callStatic.claimPodReward();
 
       // Expect 0 POOL rewards
       expect(claimPoolStaticPreBatch.toString()).equal("0");
@@ -287,7 +287,7 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(100);
 
       // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodPool();
+      await testing.pod.claimPodReward();
 
       expect(
         await testing.pool.balanceOf(testing.tokenDrop.address)
@@ -301,7 +301,7 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(1209600);
 
       // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodPool();
+      await testing.pod.claimPodReward();
 
       expect(
         await testing.pool.balanceOf(testing.tokenDrop.address)
@@ -351,7 +351,7 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(1209600);
 
       // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodPool();
+      await testing.pod.claimPodReward();
 
       // claimPodPool 30Days below/above
       expect(
@@ -371,18 +371,18 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(1209600);
 
       // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodPool();
+      await testing.pod.claimPodReward();
 
       expect(
         await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("44"), utils.parseEther("3"));
+      ).to.equalish(utils.parseEther("4"), utils.parseEther("5"));
 
       // User Claim POOL allocation
       await testing.pod.claim(testing.owner.address);
 
       expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
-        utils.parseEther("133"),
-        utils.parseEther("1")
+        utils.parseEther("9"),
+        utils.parseEther("5")
       );
 
       // Advance 2 Weeks
@@ -390,7 +390,7 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(1209600);
 
       // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodPool();
+      await testing.pod.claimPodReward();
 
       // claimPodPool 30Days below/above
       expect(
@@ -410,7 +410,7 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(1209600);
 
       // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodPool();
+      await testing.pod.claimPodReward();
 
       // claimPodPool 30Days below/above
       expect(
@@ -430,7 +430,7 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(1209600);
 
       // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodPool();
+      await testing.pod.claimPodReward();
 
       // claimPodPool 30Days below/above
       expect(
@@ -492,7 +492,7 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(1209600);
 
       // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodPool();
+      await testing.pod.claimPodReward();
 
       expect(
         await testing.pool.balanceOf(testing.tokenDrop.address)
