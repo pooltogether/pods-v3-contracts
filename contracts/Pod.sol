@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
 // Module Interfaces
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
@@ -30,10 +29,9 @@ import "./interfaces/IPrizeStrategyMinimal.sol";
  * @author Kames Geraghty
  */
 contract Pod is
-    Initializable,
+    IPod,
     ERC20Upgradeable,
     OwnableUpgradeable,
-    IPod,
     ReentrancyGuardUpgradeable
 {
     /***********************************|
