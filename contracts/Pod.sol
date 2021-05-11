@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
-
+import "hardhat/console.sol";
 // Libraries
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -510,20 +510,23 @@ contract Pod is
         // Check balance
         uint256 currentBalance = token.balanceOf(address(this));
 
+        uint256 actualAmount;
         // Withdrawal Exceeds Current Token Balance
         if (amount > currentBalance) {
-            // Calculate Withdrawal Amount
-            uint256 withdraw = amount.sub(currentBalance);
+            // Calculate withdrawal request amount
+            uint256 withdrawRequest = amount.sub(currentBalance);
 
-            // Withdraw from Prize Pool
-            uint256 exitFee = _withdrawFromPool(withdraw, maxFee);
+            // The total withdrawn amount from the Prize Pool
+            uint256 withdrawExecuted =
+                _withdrawFromPool(withdrawRequest, maxFee);
 
-            // Add Exit Fee to Withdrawal Amount
-            amount = amount.sub(exitFee);
+            actualAmount = currentBalance.add(withdrawExecuted);
+            require(amount.sub(actualAmount) <= maxFee, "Pod:max-fee-exceeded");
+        } else {
+            actualAmount = amount;
         }
 
-        // Return Token Withdrawal Amount
-        return amount;
+        return actualAmount;
     }
 
     /**
@@ -536,6 +539,8 @@ contract Pod is
         internal
         returns (uint256)
     {
+        uint256 balanceBefore = token.balanceOf(address(this));
+
         // Withdraw from Prize Pool
         uint256 exitFeePaid =
             _prizePool.withdrawInstantlyFrom(
@@ -545,6 +550,12 @@ contract Pod is
                 maxFee
             );
 
+        uint256 afterBefore = token.balanceOf(address(this));
+
+        // Calculate the total withdrawn from the PrizePool
+        uint256 totalWithdrawn = afterBefore.sub(balanceBefore);
+
+        return totalWithdrawn;
         // Exact Exit Fee
         return exitFeePaid;
     }

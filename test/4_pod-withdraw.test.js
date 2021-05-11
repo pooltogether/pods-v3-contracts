@@ -119,9 +119,8 @@ describe("Pod - Withdraw", function () {
       testing.owner.address,
       utils.parseEther("1000")
     );
-
     // batch()
-    const batch = await testing.pod.batch(utils.parseEther("1000"));
+    await testing.pod.batch();
 
     // balanceOf()
     const balanceOf = await testing.pod.balanceOf(testing.owner.address);
@@ -153,7 +152,8 @@ describe("Pod - Withdraw", function () {
     expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
       "Transfer"
     );
-    expect(testing.pod.interface.parseLog(receipt.logs[14]).name).to.equal(
+
+    expect(testing.pod.interface.parseLog(receipt.logs[13]).name).to.equal(
       "Withdrawal"
     );
   });
