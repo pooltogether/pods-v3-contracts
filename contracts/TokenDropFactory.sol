@@ -41,7 +41,7 @@ contract TokenDropFactory is ProxyFactory {
     /**
      * @notice Create a TokenDrop smart contract
      */
-    function create(Pod _measure, IERC20Upgradeable _asset)
+    function create(IERC20Upgradeable _measure, IERC20Upgradeable _asset)
         external
         returns (TokenDrop)
     {

@@ -88,7 +88,7 @@ contract PodFactory is ProxyFactory {
 
             // Create TokenDrop instance
             _drop = tokenDropFactory.create(
-                pod,
+                IERC20Upgradeable(pod),
                 IERC20Upgradeable(faucet.asset())
             );
 
