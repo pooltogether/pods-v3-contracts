@@ -554,15 +554,6 @@ contract Pod is
     |__________________________________*/
 
     /**
-     * @notice The Pod manager address.
-     * @dev Returns the address of the current Pod manager.
-     * @return address manager
-     */
-    function podManager() external view returns (address) {
-        return manager;
-    }
-
-    /**
      * @notice The Pod PrizePool reference
      * @dev Returns the address of the Pod prizepool
      * @return address The Pod prizepool
