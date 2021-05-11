@@ -2,9 +2,8 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 // External Libraries
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@pooltogether/fixed-point/contracts/FixedPoint.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
@@ -21,11 +20,11 @@ import "./libraries/ExtendedSafeCast.sol";
  * @dev A simplified version of the PoolTogether TokenFaucet that simplifies an asset token distribution using totalSupply calculations.
  * @author Kames Cox-Geraghty
  */
-contract TokenDrop is Initializable, ReentrancyGuard {
+contract TokenDrop is ReentrancyGuardUpgradeable {
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
-    using SafeMath for uint256;
+    using SafeMathUpgradeable for uint256;
     using ExtendedSafeCast for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -78,6 +77,9 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     function initialize(address _measure, address _asset) external initializer {
         require(_measure != address(0), "Pod:invalid-measure-token");
         require(_asset != address(0), "Pod:invalid-asset-token");
+
+        // Initialize ReentrancyGuard
+        __ReentrancyGuard_init();
 
         // Set measure/asset tokens.
         measure = IERC20Upgradeable(_measure);
