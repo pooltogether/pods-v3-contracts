@@ -73,7 +73,7 @@ contract PodFactory is ProxyFactory {
         address _faucet,
         address _manager,
         uint8 _decimals
-    ) external returns (address, address) {
+    ) external returns (address pod) {
         // Pod Deploy
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
@@ -106,6 +106,6 @@ contract PodFactory is ProxyFactory {
         emit LogCreatedPodAndTokenDrop(address(pod), address(_drop));
 
         // Return Pod/TokenDrop addresses
-        return (address(pod), address(_drop));
+        return (address(pod));
     }
 }
