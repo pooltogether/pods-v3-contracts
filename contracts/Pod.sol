@@ -93,17 +93,17 @@ contract Pod is
     /**
      * @dev Emitted when the Pod TokenFaucet is set by owner.
      */
-    event TokenFaucetSet(address indexed drop);
+    event TokenFaucetSet(TokenFaucet indexed drop);
 
     /**
      * @dev Emitted when an ERC20 is withdrawn.
      */
-    event ERC20Withdrawn(address indexed target, uint256 amount);
+    event ERC20Withdrawn(ERC20Upgradeable indexed target, uint256 amount);
 
     /**
      * @dev Emitted when an ERC721 is withdrawn.
      */
-    event ERC721Withdrawn(address indexed target, uint256 tokenId);
+    event ERC721Withdrawn(IERC721 indexed target, uint256 tokenId);
 
     /**
      * @dev Emitted when Pod manager is transfered.
