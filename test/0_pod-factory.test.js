@@ -109,6 +109,8 @@ describe("PodFactory", function () {
     // setTokenDrop()
     const setTokenDrop = testing.pod.setTokenDrop(constants.AddressZero);
 
-    await expect(setTokenDrop).to.be.revertedWith("Pod:invalid-drop-contract");
+    await expect(setTokenDrop).to.be.revertedWith(
+      "Pod:invalid-token-drop-contract"
+    );
   });
 });
