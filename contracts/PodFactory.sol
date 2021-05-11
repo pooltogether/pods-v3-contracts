@@ -50,6 +50,10 @@ contract PodFactory is ProxyFactory {
      * @param _tokenDropFactory Target PrizePool for deposits and withdraws
      */
     constructor(TokenDropFactory _tokenDropFactory) {
+        require(
+            address(_tokenDropFactory) != address(0),
+            "PodFactory:invalid-token-drop-factory"
+        );
         // Pod Instance
         podInstance = new Pod();
 
