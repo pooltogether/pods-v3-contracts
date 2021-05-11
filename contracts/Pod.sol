@@ -98,7 +98,7 @@ contract Pod is
     /**
      * @dev Emitted when an ERC20 is withdrawn.
      */
-    event ERC20Withdrawn(ERC20Upgradeable indexed target, uint256 amount);
+    event ERC20Withdrawn(IERC20Upgradeable indexed target, uint256 amount);
 
     /**
      * @dev Emitted when an ERC721 is withdrawn.
@@ -362,11 +362,15 @@ contract Pod is
      * @param _faucet TokenDrop address
      * @return bool true
      */
-    function setTokenFaucet(address _faucet) external onlyOwner returns (bool) {
-        require(_faucet != address(0), "Pod:invalid-faucet-contract");
+    function setTokenFaucet(TokenFaucet _faucet)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        require(address(_faucet) != address(0), "Pod:invalid-faucet-contract");
 
         // Set TokenFaucet
-        faucet = TokenFaucet(_faucet);
+        faucet = _faucet;
 
         // Emit TokenFaucetSet
         emit TokenFaucetSet(_faucet);
@@ -424,7 +428,7 @@ contract Pod is
         // Transfer Token
         _target.safeTransfer(msg.sender, amount);
 
-        emit ERC20Withdrawn(address(_target), amount);
+        emit ERC20Withdrawn(_target, amount);
 
         return true;
     }
@@ -449,7 +453,7 @@ contract Pod is
         _target.transferFrom(address(this), msg.sender, tokenId);
 
         // Emit ERC721Withdrawn
-        emit ERC721Withdrawn(address(_target), tokenId);
+        emit ERC721Withdrawn(_target, tokenId);
 
         return true;
     }

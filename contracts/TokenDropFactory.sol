@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
+// Module Interfaces
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+
 // Libraries
 import "./external/ProxyFactory.sol";
 
@@ -38,7 +41,7 @@ contract TokenDropFactory is ProxyFactory {
     /**
      * @notice Create a TokenDrop smart contract
      */
-    function create(address _measure, address _asset)
+    function create(Pod _measure, IERC20Upgradeable _asset)
         external
         returns (TokenDrop)
     {
