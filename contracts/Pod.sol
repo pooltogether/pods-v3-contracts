@@ -539,7 +539,9 @@ contract Pod is
         internal
         returns (uint256)
     {
-        uint256 balanceBefore = token.balanceOf(address(this));
+        ERC20Upgradeable _token = token;
+
+        uint256 balanceBefore = _token.balanceOf(address(this));
 
         // Withdraw from Prize Pool
         _prizePool.withdrawInstantlyFrom(
@@ -549,7 +551,7 @@ contract Pod is
             maxFee
         );
 
-        uint256 balanceAfter = token.balanceOf(address(this));
+        uint256 balanceAfter = _token.balanceOf(address(this));
 
         // Calculate the total withdrawn from the PrizePool by diffing before/after balances
         uint256 totalWithdrawn = balanceAfter.sub(balanceBefore);
