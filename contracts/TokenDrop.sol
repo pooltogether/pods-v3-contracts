@@ -25,6 +25,7 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
+    using SafeMath for uint128;
     using SafeMath for uint256;
     using ExtendedSafeCast for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -61,7 +62,7 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     |__________________________________*/
     struct UserState {
         uint128 lastExchangeRateMantissa;
-        uint256 balance;
+        uint128 balance;
     }
 
     /**
@@ -227,7 +228,7 @@ contract TokenDrop is Initializable, ReentrancyGuard {
 
         userStates[user] = UserState({
             lastExchangeRateMantissa: exchangeRateMantissa,
-            balance: uint256(userState.balance).add(newTokens).toUint128()
+            balance: userState.balance.add(newTokens).toUint128()
         });
 
         return newTokens;
