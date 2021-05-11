@@ -2,9 +2,8 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 // Libraries
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
 // Module Interfaces
@@ -35,12 +34,12 @@ contract Pod is
     ERC20Upgradeable,
     OwnableUpgradeable,
     IPod,
-    ReentrancyGuard
+    ReentrancyGuardUpgradeable
 {
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
-    using SafeMath for uint256;
+    using SafeMathUpgradeable for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /***********************************|
@@ -159,6 +158,9 @@ contract Pod is
 
         // Contract/Inheritance Configuration
         // ----------------------------------
+        // Initialize ReentrancyGuard
+        __ReentrancyGuard_init();
+
         // Initialize ERC20Token
         __ERC20_init_unchained(
             string(
