@@ -60,9 +60,10 @@ contract PodFactory is ProxyFactory {
     /**
      * @notice Create a new Pod Clone using the Pod instance.
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
-     * @param _prizePool Target PrizePool for deposits and withdraws
+     * @param _prizePool Target PrizePool for deposits and withdraws.
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
      * @param _faucet  TokenFaucet address that distributes reward token for PrizePool deposits.
+     * @param _manager Manages the Pod's non-core assets (ERC20 and ERC721 tokens).
      * @param _decimals Set the Pod decimals to match the underlying asset.
      * @return (address, address) Pod and TokenDrop addresses
      */
