@@ -63,7 +63,6 @@ contract PodFactory is ProxyFactory {
      * @param _prizePool Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
      * @param _faucet  TokenFaucet address that distributes reward token for PrizePool deposits.
-     * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
      * @return (address, address) Pod and TokenDrop addresses
      */
@@ -78,7 +77,10 @@ contract PodFactory is ProxyFactory {
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
         // Pod Initialize
-        pod.initialize(_prizePool, _ticket, _manager, _decimals);
+        pod.initialize(_prizePool, _ticket, _decimals);
+
+        // Pod Set Manager
+        pod.setManager(_manager);
 
         // Governance managed PrizePools include TokenFaucets, which "drip" an asset token.
         // Community managed PrizePools might NOT have a TokenFaucet, and thus don't require a TokenDrop.

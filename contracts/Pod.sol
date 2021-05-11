@@ -145,13 +145,11 @@ contract Pod is
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
      * @param _prizePoolTarget Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
-     * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
      */
     function initialize(
         address _prizePoolTarget,
         address _ticket,
-        address _manager,
         uint8 _decimals
     ) external initializer {
         // Prize Pool
@@ -197,9 +195,6 @@ contract Pod is
         // Initialize Core ERC20 Tokens
         token = IERC20Upgradeable(_prizePool.token());
         ticket = IERC20Upgradeable(_ticket);
-
-        // Pod Liquidation Manager
-        manager = _manager;
     }
 
     /***********************************|
@@ -338,7 +333,7 @@ contract Pod is
      * @dev Update the Pod Manger responsible for handling liquidations.
      * @return bool true
      */
-    function setPodManager(address newManager)
+    function setManager(address newManager)
         public
         virtual
         onlyOwner
