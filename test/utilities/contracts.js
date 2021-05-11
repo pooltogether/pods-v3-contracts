@@ -100,7 +100,7 @@ const createPodAndTokenDrop = async (testing, config) => {
     testing.pod_and_tokendrop_static[1]
   );
 
-  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.drop());
+  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.tokenDrop());
 
   return testing.pod_and_tokendrop_static;
 };
@@ -154,7 +154,7 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
     testing.pod_and_tokendrop_static[1]
   );
 
-  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.drop());
+  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.tokenDrop());
 
   return testing.pod_and_tokendrop_static;
 };
