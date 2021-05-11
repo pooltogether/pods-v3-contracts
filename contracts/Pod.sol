@@ -542,22 +542,19 @@ contract Pod is
         uint256 balanceBefore = token.balanceOf(address(this));
 
         // Withdraw from Prize Pool
-        uint256 exitFeePaid =
-            _prizePool.withdrawInstantlyFrom(
-                address(this),
-                amount,
-                address(ticket),
-                maxFee
-            );
+        _prizePool.withdrawInstantlyFrom(
+            address(this),
+            amount,
+            address(ticket),
+            maxFee
+        );
 
-        uint256 afterBefore = token.balanceOf(address(this));
+        uint256 balanceAfter = token.balanceOf(address(this));
 
-        // Calculate the total withdrawn from the PrizePool
-        uint256 totalWithdrawn = afterBefore.sub(balanceBefore);
+        // Calculate the total withdrawn from the PrizePool by diffing before/after balances
+        uint256 totalWithdrawn = balanceAfter.sub(balanceBefore);
 
         return totalWithdrawn;
-        // Exact Exit Fee
-        return exitFeePaid;
     }
 
     /***********************************|
