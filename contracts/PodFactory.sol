@@ -39,7 +39,7 @@ contract PodFactory is ProxyFactory {
     /**
      * @dev Emitted when a new Pod and TokenDrop pair is created.
      */
-    event LogCreatedPodAndTokenDrop(address pod, address drop);
+    event LogCreatedPodAndTokenDrop(Pod indexed pod, TokenDrop indexed drop);
 
     /***********************************|
     |   Constructor                     |
@@ -82,7 +82,7 @@ contract PodFactory is ProxyFactory {
 
         // Governance managed PrizePools include TokenFaucets, which "drip" an asset token.
         // Community managed PrizePools might NOT have a TokenFaucet, and thus don't require a TokenDrop.
-        address _drop;
+        TokenDrop _drop;
         if (address(_faucet) != address(0)) {
             TokenFaucet faucet = TokenFaucet(_faucet);
 
@@ -103,7 +103,7 @@ contract PodFactory is ProxyFactory {
         pod.transferOwnership(msg.sender);
 
         // Emit LogCreatedPodAndTokenDrop
-        emit LogCreatedPodAndTokenDrop(address(pod), address(_drop));
+        emit LogCreatedPodAndTokenDrop(pod, _drop);
 
         // Return Pod/TokenDrop addresses
         return (address(pod), address(_drop));

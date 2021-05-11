@@ -63,12 +63,12 @@ contract Pod is
     /**
      * @dev Emitted when user deposits into Pod float.
      */
-    event Deposited(address user, uint256 amount, uint256 shares);
+    event Deposited(address indexed user, uint256 amount, uint256 shares);
 
     /**
      * @dev Emitted when user withdraws from the Pod.
      */
-    event Withdrawal(address user, uint256 amount, uint256 shares);
+    event Withdrawal(address indexed user, uint256 amount, uint256 shares);
 
     /**
      * @dev Emitted when batch is executed.
@@ -78,7 +78,7 @@ contract Pod is
     /**
      * @dev Emitted when reward asset is claimed by a user.
      */
-    event Claimed(address user, uint256 balance);
+    event Claimed(address indexed user, uint256 balance);
 
     /**
      * @dev Emitted when reward asset is claimed by the POD.
@@ -88,22 +88,22 @@ contract Pod is
     /**
      * @dev Emitted when the Pod TokenDrop is set by owner.
      */
-    event TokenDropSet(address drop);
+    event TokenDropSet(TokenDrop indexed drop);
 
     /**
      * @dev Emitted when the Pod TokenFaucet is set by owner.
      */
-    event TokenFaucetSet(address drop);
+    event TokenFaucetSet(address indexed drop);
 
     /**
      * @dev Emitted when an ERC20 is withdrawn.
      */
-    event ERC20Withdrawn(address target, uint256 amount);
+    event ERC20Withdrawn(address indexed target, uint256 amount);
 
     /**
      * @dev Emitted when an ERC721 is withdrawn.
      */
-    event ERC721Withdrawn(address target, uint256 tokenId);
+    event ERC721Withdrawn(address indexed target, uint256 tokenId);
 
     /**
      * @dev Emitted when Pod manager is transfered.
@@ -380,16 +380,19 @@ contract Pod is
      * @param _tokenDrop TokenDrop address
      * @return bool true
      */
-    function setTokenDrop(address _tokenDrop)
+    function setTokenDrop(TokenDrop _tokenDrop)
         external
         onlyOwner
         returns (bool)
     {
         // TokenDrop must be a valid smart contract
-        require(_tokenDrop != address(0), "Pod:invalid-token-drop-contract");
+        require(
+            address(_tokenDrop) != address(0),
+            "Pod:invalid-token-drop-contract"
+        );
 
         // Set TokenDrop smart contract instance
-        tokenDrop = TokenDrop(_tokenDrop);
+        tokenDrop = _tokenDrop;
 
         // Emit TokenDropSet
         emit TokenDropSet(_tokenDrop);
