@@ -669,9 +669,6 @@ contract Pod is
         address to,
         uint256 amount
     ) internal virtual override {
-        // Call _beforeTokenTransfer from contract inheritance
-        super._beforeTokenTransfer(from, to, amount);
-
         // If Pod TokenDrop is initalized update calculated balances.
         if (address(tokenDrop) != address(0)) {
             tokenDrop.beforeTokenTransfer(from, to, address(this));
