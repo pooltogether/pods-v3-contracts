@@ -338,7 +338,7 @@ contract Pod is
      * @dev Update the Pod Manger responsible for handling liquidations.
      * @return bool true
      */
-    function setPodManager(address newManager)
+    function setManager(address newManager)
         public
         virtual
         onlyOwner
