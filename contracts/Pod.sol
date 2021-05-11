@@ -638,7 +638,7 @@ contract Pod is
      * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current ticket balance.
      */
-    function vaultTicketBalance() public view returns (uint256) {
+    function vaultTicketBalance() internal view returns (uint256) {
         return ticket.balanceOf(address(this));
     }
 
