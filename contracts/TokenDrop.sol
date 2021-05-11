@@ -50,10 +50,14 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     /***********************************|
     |   Events                          |
     |__________________________________*/
-    event Dripped(uint256 newTokens);
+    /**
+     * @dev Emitted when the the TokenDrop calculates new asset tokens into the exchange rate
+     */
+    event Dropped(uint256 newTokens);
 
-    event Deposited(address indexed user, uint256 amount);
-
+    /**
+     * @dev Emitted when a User claims tokens from the TokenDrop
+     */
     event Claimed(address indexed user, uint256 newTokens);
 
     /***********************************|
@@ -175,8 +179,8 @@ contract TokenDrop is Initializable, ReentrancyGuard {
                     .add(newTokens)
                     .toUint112();
             }
-            // Emit Dripped
-            emit Dripped(newTokens);
+            // Emit Dropped
+            emit Dropped(newTokens);
         }
 
         return newTokens;
