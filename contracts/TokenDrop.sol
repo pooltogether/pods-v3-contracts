@@ -228,7 +228,7 @@ contract TokenDrop is Initializable, ReentrancyGuard {
 
         userStates[user] = UserState({
             lastExchangeRateMantissa: exchangeRateMantissa,
-            balance: userState.balance.add(newTokens)
+            balance: userState.balance.add(newTokens).toUint128()
         });
 
         return newTokens;
