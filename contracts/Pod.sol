@@ -638,17 +638,17 @@ contract Pod is
      * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current ticket balance.
      */
-    function vaultTicketBalance() internal view returns (uint256) {
+    function _podTicketBalance() internal view returns (uint256) {
         return ticket.balanceOf(address(this));
     }
 
     /**
-     * @notice Measure's the Pod's total balance by adding the vaultTokenBalance and vaultTicketBalance
+     * @notice Measure's the Pod's total balance by adding the vaultTokenBalance and _podTicketBalance
      * @dev The Pod's token and ticket balance are equal in terms of "value" and thus are used to calculate's a Pod's true balance.
      * @return uint256 Pod's token and ticket balance.
      */
     function balance() public view returns (uint256) {
-        return vaultTokenBalance().add(vaultTicketBalance());
+        return vaultTokenBalance().add(_podTicketBalance());
     }
 
     /***********************************|
