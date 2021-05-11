@@ -279,7 +279,7 @@ contract Pod is
      */
     function batch() public override returns (uint256) {
         // Pod Token Balance
-        uint256 float = vaultTokenBalance();
+        uint256 float = _podTokenBalance();
 
         // Approve Prize Pool
         token.safeApprove(address(_prizePool), float);
@@ -577,7 +577,7 @@ contract Pod is
      * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
      */
     function getEarlyExitFee(uint256 amount) external returns (uint256) {
-        uint256 tokenBalance = vaultTokenBalance();
+        uint256 tokenBalance = _podTokenBalance();
         if (amount <= tokenBalance) {
             return 0;
         } else {
@@ -629,7 +629,7 @@ contract Pod is
      * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current token balance.
      */
-    function vaultTokenBalance() public view returns (uint256) {
+    function _podTokenBalance() public view returns (uint256) {
         return token.balanceOf(address(this));
     }
 
@@ -643,12 +643,12 @@ contract Pod is
     }
 
     /**
-     * @notice Measure's the Pod's total balance by adding the vaultTokenBalance and vaultTicketBalance
+     * @notice Measure's the Pod's total balance by adding the _podTokenBalance and vaultTicketBalance
      * @dev The Pod's token and ticket balance are equal in terms of "value" and thus are used to calculate's a Pod's true balance.
      * @return uint256 Pod's token and ticket balance.
      */
     function balance() public view returns (uint256) {
-        return vaultTokenBalance().add(vaultTicketBalance());
+        return _podTokenBalance().add(vaultTicketBalance());
     }
 
     /***********************************|
