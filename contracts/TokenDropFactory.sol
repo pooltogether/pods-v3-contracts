@@ -37,6 +37,9 @@ contract TokenDropFactory is ProxyFactory {
 
     /**
      * @notice Create a TokenDrop smart contract
+     * @dev Creates and initializes the TokenDrop Smart Contract with the measure (i.e. Pod) and asset (i.e. POOL) variables
+     * @param _measure The token being tracked to calculate user asset rewards
+     * @param _asset The token being rewarded when maintaining a positive balance of the "measure" token
      */
     function create(address _measure, address _asset)
         external
