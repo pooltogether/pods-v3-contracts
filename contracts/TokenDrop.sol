@@ -79,6 +79,9 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     |__________________________________*/
     /**
      * @notice Initialize TokenDrop Smart Contract
+     * @dev Initialize TokenDrop Smart Contract with the measure (i.e. Pod) and asset (i.e. POOL) variables
+     * @param _measure The token being tracked to calculate user asset rewards
+     * @param _asset The token being rewarded when maintaining a positive balance of the "measure" token
      */
     function initialize(address _measure, address _asset) external initializer {
         require(_measure != address(0), "Pod:invalid-measure-token");
