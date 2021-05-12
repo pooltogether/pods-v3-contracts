@@ -436,7 +436,7 @@ contract Pod is
      * @param tokenId The tokenId of the ERC721 collectible.
      * @return bool true
      */
-    function withdrawERC721(IERC721 _target, uint256 tokenId)
+    function withdrawERC721(IERC721Upgradeable _target, uint256 tokenId)
         external
         override
         onlyManager
