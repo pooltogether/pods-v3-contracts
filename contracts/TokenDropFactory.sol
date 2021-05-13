@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
+// Module Interfaces
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+
 // Libraries
 import "./external/ProxyFactory.sol";
 
@@ -37,10 +40,13 @@ contract TokenDropFactory is ProxyFactory {
 
     /**
      * @notice Create a TokenDrop smart contract
+     * @dev Creates and initializes the TokenDrop Smart Contract with the measure (i.e. Pod) and asset (i.e. POOL) variables
+     * @param _measure The token being tracked to calculate user asset rewards
+     * @param _asset The token being rewarded when maintaining a positive balance of the "measure" token
      */
-    function create(address _measure, address _asset)
+    function create(IERC20Upgradeable _measure, IERC20Upgradeable _asset)
         external
-        returns (address)
+        returns (TokenDrop)
     {
         // TokenDrop Deployed
         TokenDrop tokenDrop =
@@ -50,6 +56,6 @@ contract TokenDropFactory is ProxyFactory {
         tokenDrop.initialize(_measure, _asset);
 
         // Return TokenDrop addresses
-        return address(tokenDrop);
+        return tokenDrop;
     }
 }

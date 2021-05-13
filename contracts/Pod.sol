@@ -63,12 +63,12 @@ contract Pod is
     /**
      * @dev Emitted when user deposits into Pod float.
      */
-    event Deposited(address user, uint256 amount, uint256 shares);
+    event Deposited(address indexed user, uint256 amount, uint256 shares);
 
     /**
      * @dev Emitted when user withdraws from the Pod.
      */
-    event Withdrawal(address user, uint256 amount, uint256 shares);
+    event Withdrawal(address indexed user, uint256 amount, uint256 shares);
 
     /**
      * @dev Emitted when batch is executed.
@@ -78,7 +78,7 @@ contract Pod is
     /**
      * @dev Emitted when reward asset is claimed by a user.
      */
-    event Claimed(address user, uint256 balance);
+    event Claimed(address indexed user, uint256 balance);
 
     /**
      * @dev Emitted when reward asset is claimed by the POD.
@@ -88,22 +88,22 @@ contract Pod is
     /**
      * @dev Emitted when the Pod TokenDrop is set by owner.
      */
-    event TokenDropSet(address drop);
+    event TokenDropSet(TokenDrop indexed drop);
 
     /**
      * @dev Emitted when the Pod TokenFaucet is set by owner.
      */
-    event TokenFaucetSet(address drop);
+    event TokenFaucetSet(TokenFaucet indexed drop);
 
     /**
      * @dev Emitted when an ERC20 is withdrawn.
      */
-    event ERC20Withdrawn(address target, uint256 amount);
+    event ERC20Withdrawn(IERC20Upgradeable indexed target, uint256 amount);
 
     /**
      * @dev Emitted when an ERC721 is withdrawn.
      */
-    event ERC721Withdrawn(address target, uint256 tokenId);
+    event ERC721Withdrawn(IERC721 indexed target, uint256 tokenId);
 
     /**
      * @dev Emitted when Pod manager is transfered.
@@ -145,13 +145,11 @@ contract Pod is
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
      * @param _prizePoolTarget Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
-     * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
      */
     function initialize(
         address _prizePoolTarget,
         address _ticket,
-        address _manager,
         uint8 _decimals
     ) external initializer {
         // Prize Pool
@@ -197,9 +195,6 @@ contract Pod is
         // Initialize Core ERC20 Tokens
         token = IERC20Upgradeable(_prizePool.token());
         ticket = IERC20Upgradeable(_ticket);
-
-        // Pod Liquidation Manager
-        manager = _manager;
     }
 
     /***********************************|
@@ -279,7 +274,7 @@ contract Pod is
      */
     function batch() public override returns (uint256) {
         // Pod Token Balance
-        uint256 float = vaultTokenBalance();
+        uint256 float = _podTokenBalance();
 
         // Approve Prize Pool
         token.safeApprove(address(_prizePool), float);
@@ -338,7 +333,7 @@ contract Pod is
      * @dev Update the Pod Manger responsible for handling liquidations.
      * @return bool true
      */
-    function setPodManager(address newManager)
+    function setManager(address newManager)
         public
         virtual
         onlyOwner
@@ -362,11 +357,15 @@ contract Pod is
      * @param _faucet TokenDrop address
      * @return bool true
      */
-    function setTokenFaucet(address _faucet) external onlyOwner returns (bool) {
-        require(_faucet != address(0), "Pod:invalid-faucet-contract");
+    function setTokenFaucet(TokenFaucet _faucet)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        require(address(_faucet) != address(0), "Pod:invalid-faucet-contract");
 
         // Set TokenFaucet
-        faucet = TokenFaucet(_faucet);
+        faucet = _faucet;
 
         // Emit TokenFaucetSet
         emit TokenFaucetSet(_faucet);
@@ -380,16 +379,19 @@ contract Pod is
      * @param _tokenDrop TokenDrop address
      * @return bool true
      */
-    function setTokenDrop(address _tokenDrop)
+    function setTokenDrop(TokenDrop _tokenDrop)
         external
         onlyOwner
         returns (bool)
     {
         // TokenDrop must be a valid smart contract
-        require(_tokenDrop != address(0), "Pod:invalid-token-drop-contract");
+        require(
+            address(_tokenDrop) != address(0),
+            "Pod:invalid-token-drop-contract"
+        );
 
         // Set TokenDrop smart contract instance
-        tokenDrop = TokenDrop(_tokenDrop);
+        tokenDrop = _tokenDrop;
 
         // Emit TokenDropSet
         emit TokenDropSet(_tokenDrop);
@@ -421,7 +423,7 @@ contract Pod is
         // Transfer Token
         _target.safeTransfer(msg.sender, amount);
 
-        emit ERC20Withdrawn(address(_target), amount);
+        emit ERC20Withdrawn(_target, amount);
 
         return true;
     }
@@ -446,7 +448,7 @@ contract Pod is
         _target.transferFrom(address(this), msg.sender, tokenId);
 
         // Emit ERC721Withdrawn
-        emit ERC721Withdrawn(address(_target), tokenId);
+        emit ERC721Withdrawn(_target, tokenId);
 
         return true;
     }
@@ -554,15 +556,6 @@ contract Pod is
     |__________________________________*/
 
     /**
-     * @notice The Pod manager address.
-     * @dev Returns the address of the current Pod manager.
-     * @return address manager
-     */
-    function podManager() external view returns (address) {
-        return manager;
-    }
-
-    /**
      * @notice The Pod PrizePool reference
      * @dev Returns the address of the Pod prizepool
      * @return address The Pod prizepool
@@ -577,7 +570,7 @@ contract Pod is
      * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
      */
     function getEarlyExitFee(uint256 amount) external returns (uint256) {
-        uint256 tokenBalance = vaultTokenBalance();
+        uint256 tokenBalance = _podTokenBalance();
         if (amount <= tokenBalance) {
             return 0;
         } else {
@@ -629,7 +622,7 @@ contract Pod is
      * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current token balance.
      */
-    function vaultTokenBalance() public view returns (uint256) {
+    function _podTokenBalance() public view returns (uint256) {
         return token.balanceOf(address(this));
     }
 
@@ -638,17 +631,17 @@ contract Pod is
      * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current ticket balance.
      */
-    function vaultTicketBalance() public view returns (uint256) {
+    function _podTicketBalance() internal view returns (uint256) {{
         return ticket.balanceOf(address(this));
     }
 
     /**
-     * @notice Measure's the Pod's total balance by adding the vaultTokenBalance and vaultTicketBalance
+     * @notice Measure's the Pod's total balance by adding the vaultTokenBalance and _podTicketBalance
      * @dev The Pod's token and ticket balance are equal in terms of "value" and thus are used to calculate's a Pod's true balance.
      * @return uint256 Pod's token and ticket balance.
      */
     function balance() public view returns (uint256) {
-        return vaultTokenBalance().add(vaultTicketBalance());
+        return _podTokenBalance().add(vaultTicketBalance());
     }
 
     /***********************************|
@@ -669,9 +662,6 @@ contract Pod is
         address to,
         uint256 amount
     ) internal virtual override {
-        // Call _beforeTokenTransfer from contract inheritance
-        super._beforeTokenTransfer(from, to, amount);
-
         // If Pod TokenDrop is initalized update calculated balances.
         if (address(tokenDrop) != address(0)) {
             tokenDrop.beforeTokenTransfer(from, to, address(this));
