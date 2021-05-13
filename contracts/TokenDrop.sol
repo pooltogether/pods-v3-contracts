@@ -83,13 +83,16 @@ contract TokenDrop is Initializable, ReentrancyGuard {
      * @param _measure The token being tracked to calculate user asset rewards
      * @param _asset The token being rewarded when maintaining a positive balance of the "measure" token
      */
-    function initialize(address _measure, address _asset) external initializer {
-        require(_measure != address(0), "Pod:invalid-measure-token");
-        require(_asset != address(0), "Pod:invalid-asset-token");
+    function initialize(IERC20Upgradeable _measure, IERC20Upgradeable _asset)
+        external
+        initializer
+    {
+        require(address(_measure) != address(0), "Pod:invalid-measure-token");
+        require(address(_asset) != address(0), "Pod:invalid-asset-token");
 
         // Set measure/asset tokens.
-        measure = IERC20Upgradeable(_measure);
-        asset = IERC20Upgradeable(_asset);
+        measure = _measure;
+        asset = _asset;
     }
 
     /***********************************|
