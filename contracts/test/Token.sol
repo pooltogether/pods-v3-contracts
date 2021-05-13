@@ -1,5 +1,8 @@
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
-contract Token is ERC20 {
-    constructor() ERC20("TestToken", "TEST") {}
+contract Token is ERC20Upgradeable {
+    constructor() {
+        // Initialize ERC20Token
+        __ERC20_init_unchained("TestToken", "TEST");
+    }
 }

@@ -92,6 +92,9 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
         // Initialize ReentrancyGuard
         __ReentrancyGuard_init();
 
+        // Initialize ReentrancyGuard
+        __ReentrancyGuard_init();
+
         // Set measure/asset tokens.
         measure = _measure;
         asset = _asset;

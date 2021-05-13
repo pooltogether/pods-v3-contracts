@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.7.0 <0.8.0;
 
-// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 /// @title The PoolTogether Pod specification
@@ -50,7 +49,7 @@ interface IPod is IERC20Upgradeable {
     /// @dev This is mainly for Loot Boxes; so Loot Boxes that are won can be transferred out.
     /// @param token The address of the ERC721 to withdraw
     /// @param tokenId The token id to withdraw
-    function withdrawERC721(IERC721 token, uint256 tokenId)
+    function withdrawERC721(IERC721Upgradeable token, uint256 tokenId)
         external
         returns (bool);
 
