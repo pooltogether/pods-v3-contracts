@@ -25,6 +25,7 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
+    using SafeMath for uint128;
     using SafeMath for uint256;
     using ExtendedSafeCast for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -50,10 +51,14 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     /***********************************|
     |   Events                          |
     |__________________________________*/
-    event Dripped(uint256 newTokens);
+    /**
+     * @dev Emitted when the the TokenDrop calculates new asset tokens into the exchange rate
+     */
+    event Dropped(uint256 newTokens);
 
-    event Deposited(address indexed user, uint256 amount);
-
+    /**
+     * @dev Emitted when a User claims tokens from the TokenDrop
+     */
     event Claimed(address indexed user, uint256 newTokens);
 
     /***********************************|
@@ -61,7 +66,7 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     |__________________________________*/
     struct UserState {
         uint128 lastExchangeRateMantissa;
-        uint256 balance;
+        uint128 balance;
     }
 
     /**
@@ -74,6 +79,9 @@ contract TokenDrop is Initializable, ReentrancyGuard {
     |__________________________________*/
     /**
      * @notice Initialize TokenDrop Smart Contract
+     * @dev Initialize TokenDrop Smart Contract with the measure (i.e. Pod) and asset (i.e. POOL) variables
+     * @param _measure The token being tracked to calculate user asset rewards
+     * @param _asset The token being rewarded when maintaining a positive balance of the "measure" token
      */
     function initialize(address _measure, address _asset) external initializer {
         require(_measure != address(0), "Pod:invalid-measure-token");
@@ -227,7 +235,7 @@ contract TokenDrop is Initializable, ReentrancyGuard {
 
         userStates[user] = UserState({
             lastExchangeRateMantissa: exchangeRateMantissa,
-            balance: uint256(userState.balance).add(newTokens).toUint128()
+            balance: userState.balance.add(newTokens).toUint128()
         });
 
         return newTokens;

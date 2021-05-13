@@ -8,6 +8,8 @@ cache
 artifacts
 data
 
+deployments/localhost
+
 # Testing
 coverage
 coverage.json

@@ -28,11 +28,6 @@ contract PodFactory is ProxyFactory {
      */
     Pod public podInstance;
 
-    /**
-     * @notice Contract template for deploying proxied TokenDrop
-     */
-    TokenDrop public tokenDropInstance;
-
     /***********************************|
     |   Events                          |
     |__________________________________*/
@@ -50,6 +45,10 @@ contract PodFactory is ProxyFactory {
      * @param _tokenDropFactory Target PrizePool for deposits and withdraws
      */
     constructor(TokenDropFactory _tokenDropFactory) {
+        require(
+            address(_tokenDropFactory) != address(0),
+            "PodFactory:invalid-token-drop-factory"
+        );
         // Pod Instance
         podInstance = new Pod();
 
@@ -60,10 +59,10 @@ contract PodFactory is ProxyFactory {
     /**
      * @notice Create a new Pod Clone using the Pod instance.
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
-     * @param _prizePool Target PrizePool for deposits and withdraws
+     * @param _prizePool Target PrizePool for deposits and withdraws.
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
      * @param _faucet  TokenFaucet address that distributes reward token for PrizePool deposits.
-     * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
+     * @param _manager Manages the Pod's non-core assets (ERC20 and ERC721 tokens).
      * @param _decimals Set the Pod decimals to match the underlying asset.
      * @return (address, address) Pod and TokenDrop addresses
      */
@@ -73,12 +72,15 @@ contract PodFactory is ProxyFactory {
         address _faucet,
         address _manager,
         uint8 _decimals
-    ) external returns (address, address) {
+    ) external returns (address pod) {
         // Pod Deploy
         Pod pod = Pod(deployMinimal(address(podInstance), ""));
 
         // Pod Initialize
-        pod.initialize(_prizePool, _ticket, _manager, _decimals);
+        pod.initialize(_prizePool, _ticket, _decimals);
+
+        // Pod Set Manager
+        pod.setManager(_manager);
 
         // Governance managed PrizePools include TokenFaucets, which "drip" an asset token.
         // Community managed PrizePools might NOT have a TokenFaucet, and thus don't require a TokenDrop.
@@ -106,6 +108,6 @@ contract PodFactory is ProxyFactory {
         emit LogCreatedPodAndTokenDrop(address(pod), address(_drop));
 
         // Return Pod/TokenDrop addresses
-        return (address(pod), address(_drop));
+        return (address(pod));
     }
 }

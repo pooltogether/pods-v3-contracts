@@ -145,13 +145,11 @@ contract Pod is
      * @dev The Pod Smart Contact is created and initialized using the PodFactory.
      * @param _prizePoolTarget Target PrizePool for deposits and withdraws
      * @param _ticket Non-sponsored PrizePool ticket - is verified during initialization.
-     * @param _manager Liquidates the Pod's "bonus" tokens for the Pod's token.
      * @param _decimals Set the Pod decimals to match the underlying asset.
      */
     function initialize(
         address _prizePoolTarget,
         address _ticket,
-        address _manager,
         uint8 _decimals
     ) external initializer {
         // Prize Pool
@@ -197,9 +195,6 @@ contract Pod is
         // Initialize Core ERC20 Tokens
         token = IERC20Upgradeable(_prizePool.token());
         ticket = IERC20Upgradeable(_ticket);
-
-        // Pod Liquidation Manager
-        manager = _manager;
     }
 
     /***********************************|
@@ -279,7 +274,7 @@ contract Pod is
      */
     function batch() public override returns (uint256) {
         // Pod Token Balance
-        uint256 float = vaultTokenBalance();
+        uint256 float = _podTokenBalance();
 
         // Approve Prize Pool
         token.safeApprove(address(_prizePool), float);
@@ -338,7 +333,7 @@ contract Pod is
      * @dev Update the Pod Manger responsible for handling liquidations.
      * @return bool true
      */
-    function setPodManager(address newManager)
+    function setManager(address newManager)
         public
         virtual
         onlyOwner
@@ -554,15 +549,6 @@ contract Pod is
     |__________________________________*/
 
     /**
-     * @notice The Pod manager address.
-     * @dev Returns the address of the current Pod manager.
-     * @return address manager
-     */
-    function podManager() external view returns (address) {
-        return manager;
-    }
-
-    /**
      * @notice The Pod PrizePool reference
      * @dev Returns the address of the Pod prizepool
      * @return address The Pod prizepool
@@ -577,7 +563,7 @@ contract Pod is
      * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
      */
     function getEarlyExitFee(uint256 amount) external returns (uint256) {
-        uint256 tokenBalance = vaultTokenBalance();
+        uint256 tokenBalance = _podTokenBalance();
         if (amount <= tokenBalance) {
             return 0;
         } else {
@@ -629,7 +615,7 @@ contract Pod is
      * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current token balance.
      */
-    function vaultTokenBalance() public view returns (uint256) {
+    function _podTokenBalance() public view returns (uint256) {
         return token.balanceOf(address(this));
     }
 
@@ -638,17 +624,17 @@ contract Pod is
      * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current ticket balance.
      */
-    function vaultTicketBalance() public view returns (uint256) {
+    function vaultTicketBalance() internal view returns (uint256) {
         return ticket.balanceOf(address(this));
     }
 
     /**
-     * @notice Measure's the Pod's total balance by adding the vaultTokenBalance and vaultTicketBalance
+     * @notice Measure's the Pod's total balance by adding the _podTokenBalance and vaultTicketBalance
      * @dev The Pod's token and ticket balance are equal in terms of "value" and thus are used to calculate's a Pod's true balance.
      * @return uint256 Pod's token and ticket balance.
      */
     function balance() public view returns (uint256) {
-        return vaultTokenBalance().add(vaultTicketBalance());
+        return _podTokenBalance().add(vaultTicketBalance());
     }
 
     /***********************************|
@@ -669,9 +655,6 @@ contract Pod is
         address to,
         uint256 amount
     ) internal virtual override {
-        // Call _beforeTokenTransfer from contract inheritance
-        super._beforeTokenTransfer(from, to, amount);
-
         // If Pod TokenDrop is initalized update calculated balances.
         if (address(tokenDrop) != address(0)) {
             tokenDrop.beforeTokenTransfer(from, to, address(this));
