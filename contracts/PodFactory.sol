@@ -108,6 +108,6 @@ contract PodFactory is ProxyFactory {
         emit LogCreatedPodAndTokenDrop(_pod, _drop);
 
         // Return Pod/TokenDrop addresses
-        return (address(pod));
+        return (address(_pod));
     }
 }
