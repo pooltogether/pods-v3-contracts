@@ -18,7 +18,7 @@ const networks = {
     contracts: {},
   },
   hardhat: {
-    chainId: 1337,
+    chainId: 1,
     allowUnlimitedContractSize: true,
     hardfork: "istanbul",
     accounts: {
