@@ -100,7 +100,7 @@ contract Pod is
     /**
      * @dev Emitted when an ERC721 is withdrawn.
      */
-    event ERC721Withdrawn(IERC721 indexed target, uint256 tokenId);
+    event ERC721Withdrawn(IERC721Upgradeable indexed target, uint256 tokenId);
 
     /**
      * @dev Emitted when Pod manager is transfered.
@@ -541,7 +541,7 @@ contract Pod is
         internal
         returns (uint256)
     {
-        ERC20Upgradeable _token = token;
+        IERC20Upgradeable _token = token;
 
         uint256 balanceBefore = _token.balanceOf(address(this));
 
@@ -641,7 +641,7 @@ contract Pod is
      * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current ticket balance.
      */
-    function _podTicketBalance() internal view returns (uint256) {{
+    function _podTicketBalance() internal view returns (uint256) {
         return ticket.balanceOf(address(this));
     }
 
@@ -651,7 +651,7 @@ contract Pod is
      * @return uint256 Pod's token and ticket balance.
      */
     function balance() public view returns (uint256) {
-        return _podTokenBalance().add(vaultTicketBalance());
+        return _podTokenBalance().add(_podTicketBalance());
     }
 
     /***********************************|

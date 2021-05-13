@@ -64,7 +64,7 @@ contract PodFactory is ProxyFactory {
      * @param _faucet  TokenFaucet address that distributes reward token for PrizePool deposits.
      * @param _manager Manages the Pod's non-core assets (ERC20 and ERC721 tokens).
      * @param _decimals Set the Pod decimals to match the underlying asset.
-     * @return (address, address) Pod and TokenDrop addresses
+     * @return pod Pod address
      */
     function create(
         address _prizePool,
@@ -74,13 +74,13 @@ contract PodFactory is ProxyFactory {
         uint8 _decimals
     ) external returns (address pod) {
         // Pod Deploy
-        Pod pod = Pod(deployMinimal(address(podInstance), ""));
+        Pod _pod = Pod(deployMinimal(address(podInstance), ""));
 
         // Pod Initialize
-        pod.initialize(_prizePool, _ticket, _decimals);
+        _pod.initialize(_prizePool, _ticket, _decimals);
 
         // Pod Set Manager
-        pod.setManager(_manager);
+        _pod.setManager(_manager);
 
         // Governance managed PrizePools include TokenFaucets, which "drip" an asset token.
         // Community managed PrizePools might NOT have a TokenFaucet, and thus don't require a TokenDrop.
@@ -90,22 +90,22 @@ contract PodFactory is ProxyFactory {
 
             // Create TokenDrop instance
             _drop = tokenDropFactory.create(
-                IERC20Upgradeable(pod),
+                IERC20Upgradeable(_pod),
                 IERC20Upgradeable(faucet.asset())
             );
 
             // Set Pod TokenFacuet
-            pod.setTokenFaucet(faucet);
+            _pod.setTokenFaucet(faucet);
 
             // Set Pod TokenDrop
-            pod.setTokenDrop(_drop);
+            _pod.setTokenDrop(_drop);
         }
 
         // Update Pod owner from factory to msg.sender
-        pod.transferOwnership(msg.sender);
+        _pod.transferOwnership(msg.sender);
 
         // Emit LogCreatedPodAndTokenDrop
-        emit LogCreatedPodAndTokenDrop(pod, _drop);
+        emit LogCreatedPodAndTokenDrop(_pod, _drop);
 
         // Return Pod/TokenDrop addresses
         return (address(pod));

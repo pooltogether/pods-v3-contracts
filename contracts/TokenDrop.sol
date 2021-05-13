@@ -190,8 +190,8 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
                 totalUnclaimed = uint256(totalUnclaimed)
                     .add(newTokens)
                     .toUint112();
-                // Emit Dripped
-                emit Dripped(newTokens);
+                // Emit Dropped
+                emit Dropped(newTokens);
             }
         }
 
