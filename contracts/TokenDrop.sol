@@ -182,9 +182,9 @@ contract TokenDrop is Initializable, ReentrancyGuard {
                 totalUnclaimed = uint256(totalUnclaimed)
                     .add(newTokens)
                     .toUint112();
+                // Emit Dripped
+                emit Dripped(newTokens);
             }
-            // Emit Dropped
-            emit Dropped(newTokens);
         }
 
         return newTokens;
