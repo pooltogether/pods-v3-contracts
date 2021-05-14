@@ -27,7 +27,7 @@ describe("PodManager", function() {
 
     // Set Ticket
     testing.USDC = await ethers.getContractAt(
-      "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
+      "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
       config.tokens.USDC
     );
   });
@@ -161,7 +161,7 @@ describe("PodManager", function() {
       await testing.pod.setPodManager(testing.owner.address);
 
       // withdrawCollectible() - Withdraw NFT from Pod
-      const liquidate = testing.pod.withdrawERC721(testing.podNFT.address, 1);
+      await testing.pod.withdrawERC721(testing.podNFT.address, 1);
 
       // Check Owner holds NFT
       const tokenOwnerAfterWithdraw = await testing.podNFT.ownerOf(1);

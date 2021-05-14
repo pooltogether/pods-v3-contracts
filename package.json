@@ -15,7 +15,10 @@
     "clean": "rm -rf artifacts build .build-openzeppelin cache coverage coverage.json test-results.xml .cache-openzeppelin abis deployments/localhost deployments/localhost_*",
     "remove-logs": "yarn run hardhat remove-logs",
     "chain": "./scripts/chain.sh",
-    "fork-run": "hardhat run --network localhost"
+    "fork-run": "hardhat run --network localhost",
+    "fork-setup": "./scripts/setup_fork.sh",
+    "fork-test-pods": "./scripts/test_all_pods.sh",
+    "fork-test": "yarn fork-setup ; yarn fork-test-pods"
   },
   "author": "",
   "license": "ISC",
@@ -37,7 +40,6 @@
     "solium": "^1.2.5"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "3.1.0-solc-0.7",
     "@openzeppelin/contracts-upgradeable": "^3.4.0",
     "@pooltogether/fixed-point": "^1.0.0",
     "hardhat-dependency-compiler": "^1.1.1",

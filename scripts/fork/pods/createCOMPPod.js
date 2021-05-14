@@ -5,7 +5,7 @@ async function run() {
   const namedAccount = await getNamedAccounts()
 
   const daiHolder = await ethers.provider.getUncheckedSigner('0x0000000000000000000000000000000000000001')
-  const prizePoolAddress = namedAccount.prizePoolDAI
+  const prizePoolAddress = namedAccount.prizePoolCOMP
 
   await createPrizePoolPod(daiHolder, prizePoolAddress)
 }

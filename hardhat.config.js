@@ -19,6 +19,7 @@ module.exports = {
   namedAccounts: {
     deployer: {
       default: 0,
+      testing: process.env.TESTING_DEPLOYER_ACCOUNT,
     },
     sponsor: {
       default: 1,
@@ -43,7 +44,7 @@ module.exports = {
       4: "", // rinkeby
     },
     prizePoolPOOL: {
-      1: "", // mainnet
+      1: "0x396b4489da692788e327E2e4b2B0459A5Ef26791", // mainnet
       4: "", // rinkeby
     },
     prizePoolBAT: {
@@ -61,6 +62,27 @@ module.exports = {
       56: "0x3e8b9901dBFE766d3FE44B36c180A1bca2B9A295", // bsc
       97: "0x3e8b9901dBFE766d3FE44B36c180A1bca2B9A295", //bscTestnet
     },
+    WETH: {
+      1: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // mainnet
+    },
+    DAI: {
+      1: "0x6b175474e89094c44da98b954eedeac495271d0f", // mainnet
+    },
+    USDC: {
+      1: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // mainnet
+    },
+    COMP: {
+      1: "0xc00e94cb662c3520282e6f5717214004a7f26888", // mainnet
+    },
+    UNI: {
+      1: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", // mainnet
+    },
+    POOL: {
+      1: "0x0cEC1A9154Ff802e7934Fc916Ed7Ca50bDE6844e", // mainnet
+    },
+    UniswapRouter: {
+      1: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // mainnet
+    },
   },
   external: {
     contracts: [
@@ -77,6 +99,7 @@ module.exports = {
     paths: [
       "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol",
       "@pooltogether/pooltogether-contracts/contracts/prize-pool/PrizePool.sol",
+      "@pooltogether/pooltogether-contracts/contracts/token-faucet/TokenFaucet.sol",
       "@pooltogether/pooltogether-contracts/contracts/prize-strategy/multiple-winners/MultipleWinners.sol",
     ],
   },

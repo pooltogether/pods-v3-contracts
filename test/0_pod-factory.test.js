@@ -1,4 +1,4 @@
-const { ethers } = require("hardhat");
+const { ethers, getNamedAccounts } = require("hardhat");
 const { expect } = require("chai");
 const { getConfig } = require("../lib/config");
 const {
@@ -12,6 +12,7 @@ const { constants } = require("ethers");
 
 describe("PodFactory", function () {
   let testing = {};
+  let namedAccounts;
   const config = getConfig("mainnet");
 
   const podDAI = {
@@ -32,6 +33,7 @@ describe("PodFactory", function () {
     testing = await setupSigners(testing);
     testing = await setupContractFactories(testing);
     testing = await createPeripheryContract(testing, config);
+    namedAccounts = await getNamedAccounts();
   });
 
   /******************|
@@ -42,6 +44,7 @@ describe("PodFactory", function () {
       testing,
       podDAI
     );
+
     testing.pod = await ethers.getContractAt("Pod", pod);
     testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDrop);
   });
@@ -72,27 +75,31 @@ describe("PodFactory", function () {
 
   it("should succeed creating a new Pod with with DAI settings", async function () {
     // callStatic.create()
-    const tokenDropFactoryCallStatic = await testing.podFactory.callStatic.create(
-      prizePool,
-      ticket,
-      faucet,
-      constants.AddressZero, // PodLiquidatorManager
-      18
-    );
+    const tokenDropFactoryCallStatic =
+      await testing.podFactory.callStatic.create(
+        prizePool,
+        ticket,
+        faucet,
+        namedAccounts.deployer,
+        18
+      );
 
     // create()
     const tokenDropFactory = testing.podFactory.create(
       prizePool,
       ticket,
       faucet,
-      constants.AddressZero, // PodLiquidatorManager
+      namedAccounts.deployer,
       18
     );
+
+    testing.pod = await ethers.getContractAt("Pod", tokenDropFactoryCallStatic);
+    const tokenDropAddress = await testing.pod.tokenDrop();
 
     // Validate Pod/TokenDrop using events.
     await expect(tokenDropFactory)
       .to.emit(testing.podFactory, "LogCreatedPodAndTokenDrop")
-      .withArgs(tokenDropFactoryCallStatic[0], tokenDropFactoryCallStatic[1]);
+      .withArgs(tokenDropFactoryCallStatic, tokenDropAddress);
   });
 
   it("should fail when setting token drop reference from not authorized account", async function () {

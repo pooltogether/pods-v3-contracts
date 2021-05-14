@@ -5,12 +5,15 @@ const {
     USDT_HOLDER,
     GUSD_HOLDER,
     BUSD_HOLDER,
-    SUSD_HOLDER
+    SUSD_HOLDER,
+    DAI_HOLDER
 } = require('./constants')
 
 async function run(){
     console.log(chalk.dim("Impersonating accounts..."))
     await hre.ethers.provider.send("hardhat_impersonateAccount", ["0x0000000000000000000000000000000000000000"])
+    await hre.ethers.provider.send("hardhat_impersonateAccount", ["0x0000000000000000000000000000000000000001"])
+    await hre.ethers.provider.send("hardhat_impersonateAccount", ["0x21950e281bde1714ffd1062ed17c56d4d8de2359"]) // POOL
     await hre.ethers.provider.send("hardhat_impersonateAccount",["0x00929c5c2c4f00b540e429247669eb6fcd8b1dbf"])
     await hre.ethers.provider.send("hardhat_impersonateAccount",["0x029Aa20Dcc15c022b1b61D420aaCf7f179A9C73f"])
     await hre.ethers.provider.send("hardhat_impersonateAccount",["0x121b9c8c140fa8fe697cc96d156a38d865fa4868"])
@@ -65,6 +68,7 @@ async function run(){
     await hre.ethers.provider.send("hardhat_impersonateAccount",[USDT_HOLDER])
     await hre.ethers.provider.send("hardhat_impersonateAccount",[GUSD_HOLDER])
     await hre.ethers.provider.send("hardhat_impersonateAccount",[BUSD_HOLDER])
+    await hre.ethers.provider.send("hardhat_impersonateAccount",[SUSD_HOLDER])
     await hre.ethers.provider.send("hardhat_impersonateAccount",[SUSD_HOLDER])
     console.log(chalk.green('Impersonated accounts'))
 }

@@ -3,9 +3,8 @@ const { getPodAndDropAddress } = require("../../../lib/deploy");
 const { dim, yellow, green, cyan } = require("../../../lib/chalk_colors");
 
 const { 
-  getPrizePoolAddressFromBuilderTransaction,
-  runPoolLifecycle
-} = require('../helpers/runPoolLifecycle')
+  runPodLifecycle,
+} = require('../helpers/runPodLifecycle')
 
 
 async function createPrizePoolPod(signer, prizePoolAddress) {
@@ -13,8 +12,6 @@ async function createPrizePoolPod(signer, prizePoolAddress) {
   const prizePool = await ethers.getContractAt('PrizePool', prizePoolAddress)
 
   dim(`Using PodFactory @ ${podFactory.address}`)
-
-  const block = await ethers.provider.getBlock()
 
   const tokens = await prizePool.tokens()
   const prizeStrategyAddress = await prizePool.prizeStrategy()
@@ -30,9 +27,7 @@ async function createPrizePoolPod(signer, prizePoolAddress) {
     prizeStrategyAddress,
     18
   )
-  console.log(address, 'address')
-
-  const tx = await podFactory.create(
+  await podFactory.create(
     prizePoolAddress,
     tokens[1],
     faucetAddress,
@@ -40,8 +35,8 @@ async function createPrizePoolPod(signer, prizePoolAddress) {
     18
   )
 
-  green(`Created PrizePool Pod ${address[0]}`)
-
+  green(`Created PrizePool Pod ${address}`)
+  runPodLifecycle(signer, address)
 }
 
 module.exports = {

@@ -2,8 +2,8 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 // Libraries
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 
@@ -18,11 +18,11 @@ import "./interfaces/uniswap/IUniswapV2Router02.sol";
  * @dev Liquidates non-core tokens (deposit token, PrizePool tickets and the POOL goverance) token for fair distribution Pod winners.
  * @author Kames Geraghty
  */
-contract PodManager is Ownable, IPodManager {
+contract PodManager is OwnableUpgradeable, IPodManager {
     /***********************************|
     |   Libraries                       |
     |__________________________________*/
-    using SafeMath for uint256;
+    using SafeMathUpgradeable for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /***********************************|
@@ -97,7 +97,7 @@ contract PodManager is Ownable, IPodManager {
      */
     function withdrawCollectible(
         address _pod,
-        IERC721 target,
+        IERC721Upgradeable target,
         uint256 tokenId
     ) external override returns (bool) {
         IPod pod = IPod(_pod);

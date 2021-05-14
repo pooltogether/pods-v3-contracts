@@ -33,12 +33,12 @@ module.exports = async (hardhat) => {
   dim("PoolTogether Pod Contracts - Deploy Script")
   dim("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 
-  cyan("\nDeploying ControlledTokenProxyFactory...")
-  const controlledTokenProxyFactoryResult = await deploy("PodFactoy", {
+  cyan("\nDeploying PodFactory...")
+  const controlledTokenProxyFactoryResult = await deploy("PodFactory", {
     from: deployer,
     skipIfAlreadyDeployed: true
   })
-  displayResult('ControlledTokenProxyFactory', controlledTokenProxyFactoryResult)
+  displayResult('PodFactory', controlledTokenProxyFactoryResult)
 
   dim("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
   green("Contract Deployments Complete!")

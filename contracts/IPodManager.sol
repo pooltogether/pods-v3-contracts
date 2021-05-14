@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <0.8.0;
 
 // Interface
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 
 interface IPodManager {
     /**
@@ -24,7 +24,7 @@ interface IPodManager {
      */
     function withdrawCollectible(
         address _pod,
-        IERC721 target,
+        IERC721Upgradeable target,
         uint256 tokenId
     ) external returns (bool);
 }

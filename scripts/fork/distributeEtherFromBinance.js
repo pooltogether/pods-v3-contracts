@@ -5,7 +5,8 @@ const {
   USDT_HOLDER,
   GUSD_HOLDER,
   BUSD_HOLDER,
-  SUSD_HOLDER
+  SUSD_HOLDER,
+  POD_TOKEN_HOLDER
 } = require('./constants')
 const { getNamedAccounts } = hardhat
 
@@ -27,7 +28,9 @@ async function run() {
     ['USDT Holder']: USDT_HOLDER,
     ['GUSD Holder']: GUSD_HOLDER,
     ['BUSD Holder']: BUSD_HOLDER,
-    ['SUSD Holder']: SUSD_HOLDER
+    ['SUSD Holder']: SUSD_HOLDER,
+    ['POD Token Holder']: POD_TOKEN_HOLDER,
+    ['POOL Wallet']: '0x21950e281bde1714ffd1062ed17c56d4d8de2359'
   }
 
   const keys = Object.keys(recipients)

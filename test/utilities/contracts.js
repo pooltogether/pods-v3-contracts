@@ -73,7 +73,7 @@ const createPodAndTokenDrop = async (testing, config) => {
   );
 
   // CallStatic Create Pod/TokenDrop using PodFactory Smart Contract
-  testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
+  testing.podAddress = await testing.podFactory.callStatic.create(
     config.podDAI.prizePool,
     config.podDAI.ticket,
     config.podDAI.faucet,
@@ -92,17 +92,14 @@ const createPodAndTokenDrop = async (testing, config) => {
 
   testing.pod = await ethers.getContractAt(
     "Pod",
-    testing.pod_and_tokendrop_static[0]
+    testing.podAddress
   );
 
-  testing.tokenDrop = await ethers.getContractAt(
-    "TokenDrop",
-    testing.pod_and_tokendrop_static[1]
-  );
+  const tokenDropAddress = await testing.pod.tokenDrop()
 
-  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.tokenDrop());
+  testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDropAddress);
 
-  return testing.pod_and_tokendrop_static;
+  return [testing.podAddress, tokenDropAddress];
 };
 
 const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
@@ -127,7 +124,7 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
   );
 
   // CallStatic Create Pod/TokenDrop using PodFactory Smart Contract
-  testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
+  testing.podAddress = await testing.podFactory.callStatic.create(
     config.prizePool,
     config.ticket,
     config.faucet,
@@ -146,17 +143,14 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
 
   testing.pod = await ethers.getContractAt(
     "Pod",
-    testing.pod_and_tokendrop_static[0]
+    testing.podAddress
   );
 
-  testing.tokenDrop = await ethers.getContractAt(
-    "TokenDrop",
-    testing.pod_and_tokendrop_static[1]
-  );
+  const tokenDropAddress = await testing.pod.tokenDrop()
 
-  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.tokenDrop());
+  testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDropAddress);
 
-  return testing.pod_and_tokendrop_static;
+  return [testing.podAddress, tokenDropAddress];
 };
 
 module.exports = {
