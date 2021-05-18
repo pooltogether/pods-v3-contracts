@@ -562,18 +562,18 @@ contract Pod is
     }
 
     /**
-     * @notice Pod current token balance.
-     * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
-     * @return uint256 Pod's current token balance.
+     * @notice Pod token balance.
+     * @dev Read Pod token balance from external ERC20 contract.
+     * @return uint256 Token balance.
      */
     function _podTokenBalance() internal view returns (uint256) {
         return token.balanceOf(address(this));
     }
 
     /**
-     * @notice Pod current ticket balance.
-     * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
-     * @return uint256 Pod's current ticket balance.
+     * @notice Pod ticket balance.
+     * @dev Read Pod ticket balance from external ERC20 contract.
+     * @return uint256 Ticket balance.
      */
     function _podTicketBalance() internal view returns (uint256) {
         return ticket.balanceOf(address(this));
