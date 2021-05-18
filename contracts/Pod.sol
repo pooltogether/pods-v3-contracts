@@ -615,20 +615,17 @@ contract Pod is
     }
 
     /**
-     * @notice Calculate the cost of the user's price per share based on a Pod's token/ticket balance.
-     * @dev Calculates the cost of the user's price per share based on a Pod's token/ticket balance.
+     * @notice Calculate the underlying assets relative to share input.
+     * @dev Converts share amount to asset amount by checking the Pod's token and ticket balance.
+     * @param shares Amount of shares representing underlying assets.
+     * @return amount Total assets relative to share input.
      */
-    function getUserPricePerShare(address user)
+    function balanceOfUnderlying(uint256 shares)
         external
         view
-        returns (uint256)
+        returns (uint256 amount)
     {
-        // Check totalSupply to prevent SafeMath: division by zero
-        if (totalSupply() > 0) {
-            return balanceOf(user).mul(1e18).div(balance());
-        } else {
-            return 0;
-        }
+        return (balance().mul(shares)).div(totalSupply());
     }
 
     /**
