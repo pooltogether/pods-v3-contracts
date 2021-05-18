@@ -30,9 +30,15 @@ describe("PodFactory", function () {
   const faucet = "0xF362ce295F2A4eaE4348fFC8cDBCe8d729ccb8Eb";
 
   before(async () => {
+    const addressPeriphery = {
+      token: "",
+      ticket: "",
+      reward: "",
+    };
+
     testing = await setupSigners(testing);
     testing = await setupContractFactories(testing);
-    testing = await createPeripheryContract(testing, config);
+    testing = await createPeripheryContract(testing, addressPeriphery);
     namedAccounts = await getNamedAccounts();
   });
 
@@ -54,7 +60,6 @@ describe("PodFactory", function () {
   it("should have the TokenDropFactory reference", async function () {
     // tokenDropFactory()
     const tokenDropFactory = await testing.podFactory.tokenDropFactory();
-
     expect(tokenDropFactory).equal(testing.tokenDropFactory.address);
   });
 

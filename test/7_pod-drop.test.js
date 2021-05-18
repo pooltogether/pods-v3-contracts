@@ -142,7 +142,8 @@ describe("Pod - Drops", function () {
     await testing.pod.batch(testing.token.balanceOf(testing.pod.address));
 
     // claimPodPool() callStatic
-    const claimPoolStaticPreBatch = await testing.pod.callStatic.claimPodReward();
+    const claimPoolStaticPreBatch =
+      await testing.pod.callStatic.claimPodReward();
 
     // Expect 0 POOL rewards
     expect(claimPoolStaticPreBatch.toString()).equal("0");
@@ -211,6 +212,7 @@ describe("Pod - Drops", function () {
           },
         ],
       });
+
       const [pod, tokenDrop] = await createPodAndTokenDrop(testing, config);
       testing.pod = await ethers.getContractAt("Pod", pod);
       testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDrop);
@@ -252,7 +254,8 @@ describe("Pod - Drops", function () {
       await advanceTimeAndBlock(2592000);
 
       // claimPodPool() callStatic
-      const claimPoolStaticPreBatch = await testing.pod.callStatic.claimPodReward();
+      const claimPoolStaticPreBatch =
+        await testing.pod.callStatic.claimPodReward();
 
       // Expect 0 POOL rewards
       expect(claimPoolStaticPreBatch.toString()).equal("0");
@@ -295,236 +298,6 @@ describe("Pod - Drops", function () {
         utils.parseEther("0.0037047559905"),
         utils.parseEther("0.001")
       );
-
-      // Advance 2 Weeks
-      // ------------------------------
-      await advanceTimeAndBlock(1209600);
-
-      // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodReward();
-
-      expect(
-        await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("44"), utils.parseEther("1"));
-
-      // Mock Contract
-      // ------------------------------
-      const POD = await hre.artifacts.readArtifact("Pod");
-      podMock = await deployMockContract(testing.owner, POD.abi, {});
-
-      await podMock.mock.token.returns(config.podDAI.token);
-
-      await podMock.mock.claim
-        .withArgs(testing.owner.address)
-        .returns(toWei("44"));
-
-      expect(await call(podMock, "claim", testing.owner.address)).to.equalish(
-        utils.parseEther("44"),
-        utils.parseEther("1")
-      );
-
-      // User Claim POOL allocation
-      const claimOwnerStatic = await testing.pod.callStatic.claim(
-        testing.owner.address
-      );
-      const claimOwner = await testing.pod.claim(testing.owner.address);
-
-      // Transaction Receipt
-      let receipt = await provider.getTransactionReceipt(claimOwner.hash);
-
-      // Event Logs
-      let eventClaimed = testing.pod.interface.parseLog(receipt.logs[2]);
-
-      // Check Call Value
-      expect(claimOwnerStatic).to.not.be.null;
-      expect(eventClaimed.name).to.equal("Claimed");
-
-      expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
-        utils.parseEther("44"),
-        utils.parseEther("1")
-      );
-
-      userClaimPool = await testing.pool.balanceOf(testing.owner.address);
-
-      // Advance 2 Weeks
-      // ------------------------------
-      await advanceTimeAndBlock(1209600);
-
-      // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodReward();
-
-      // claimPodPool 30Days below/above
-      expect(
-        await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("44"), utils.parseEther("1"));
-
-      // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address);
-
-      expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
-        utils.parseEther("88"),
-        utils.parseEther("1")
-      );
-
-      // Advance 2 Weeks
-      // ------------------------------
-      await advanceTimeAndBlock(1209600);
-
-      // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodReward();
-
-      expect(
-        await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("4"), utils.parseEther("5"));
-
-      // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address);
-
-      expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
-        utils.parseEther("9"),
-        utils.parseEther("5")
-      );
-
-      // Advance 2 Weeks
-      // ------------------------------
-      await advanceTimeAndBlock(1209600);
-
-      // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodReward();
-
-      // claimPodPool 30Days below/above
-      expect(
-        await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("27"), utils.parseEther("1"));
-
-      // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address);
-
-      expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
-        utils.parseEther("177"),
-        utils.parseEther("20")
-      );
-
-      // Advance 2 Weeks - POOL Rewards start to taper off here...
-      // ------------------------------
-      await advanceTimeAndBlock(1209600);
-
-      // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodReward();
-
-      // claimPodPool 30Days below/above
-      expect(
-        await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("22"), utils.parseEther("30"));
-
-      // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address);
-
-      expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
-        utils.parseEther("199"),
-        utils.parseEther("200")
-      );
-
-      // Advance 2 Weeks
-      // ------------------------------
-      await advanceTimeAndBlock(1209600);
-
-      // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodReward();
-
-      // claimPodPool 30Days below/above
-      expect(
-        await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("0"), utils.parseEther("1"));
-
-      // User Claim POOL allocation
-      await testing.pod.claim(testing.owner.address);
-
-      expect(await testing.pool.balanceOf(testing.owner.address)).to.equalish(
-        utils.parseEther("195"),
-        utils.parseEther("100")
-      );
-    });
-
-    // Distribute POOL to multiple Accounts
-    // ----------------------------------------------------------------
-    it("Pod should accumulate POOL rewards and multiple users to withdraw total allocation [ @skip-on-coverage ]", async function () {
-      // token.approve(pod, owner.balance)
-      await testing.token.approve(
-        testing.pod.address,
-        await testing.token.balanceOf(testing.owner.address)
-      );
-
-      // ----------------------------------
-      // depositTo() for Multuple Accounts
-      // ----------------------------------
-      testing.pod = testing.pod.connect(testing.owner);
-
-      // pod.depositTo(alice, 25000 tokens)
-      await advanceTimeAndBlock(1);
-      await testing.pod.depositTo(
-        testing.alice.address,
-        utils.parseEther("25000")
-      );
-
-      // pod.depositTo(bob, 25000 tokens)
-      await advanceTimeAndBlock(1);
-      testing.pod = testing.pod.connect(testing.owner);
-      await testing.pod.depositTo(
-        testing.bob.address,
-        utils.parseEther("25000")
-      );
-
-      // ----------------------------------
-      // Convert token float to tickets
-      // ----------------------------------
-      // pod.batch()
-      await testing.pod.batch(
-        await testing.token.balanceOf(testing.pod.address)
-      );
-
-      // ----------------------------------
-      // Start Distributing POOL
-      // ----------------------------------
-
-      // Advance 2 Weeks
-      // ------------------------------
-      await advanceTimeAndBlock(1209600);
-
-      // claimPodPool() - Claim POOL for Pod
-      await testing.pod.claimPodReward();
-
-      expect(
-        await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("44"), utils.parseEther("1"));
-
-      // Alice Claim
-      // ------------------------------
-      // Alice Claim POOL allocation
-      testing.pod = testing.pod.connect(testing.alice);
-      await testing.pod.claim(testing.alice.address);
-
-      expect(await testing.pool.balanceOf(testing.alice.address)).to.equalish(
-        utils.parseEther("22"),
-        utils.parseEther("1")
-      );
-
-      // BOB Claim
-      // ------------------------------
-      // Bob Claim POOL allocation
-      testing.pod = testing.pod.connect(testing.bob);
-      await testing.pod.claim(testing.bob.address);
-
-      expect(await testing.pool.balanceOf(testing.bob.address)).to.equalish(
-        utils.parseEther("22"),
-        utils.parseEther("1")
-      );
-
-      // Verify Pod POOL Balance - Expect 0
-      // ------------------------------
-      expect(
-        await testing.pool.balanceOf(testing.tokenDrop.address)
-      ).to.equalish(utils.parseEther("0"), utils.parseEther("3"));
     });
   });
 });

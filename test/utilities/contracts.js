@@ -29,30 +29,29 @@ const setupSigners = async (testing) => {
   return testing;
 };
 
-const createPeripheryContract = async (testing, config) => {
+const createPeripheryContract = async (testing, addresses) => {
   // Set Token
   testing.token = await ethers.getContractAt(
     "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
-    config.podDAI.token
+    addresses.token
   );
-
-  // Set Pool
-  testing.pool = await ethers.getContractAt(
-    "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
-    config.tokens.POOL
-  );
-
   // Set Ticket
   testing.ticket = await ethers.getContractAt(
     "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
     config.podDAI.ticket
   );
 
+    // Set Pool
+    testing.pool = await ethers.getContractAt(
+      "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
+      addresses.reward
+    );
+  
+
   return testing;
 };
 
 const createPodAndTokenDrop = async (testing, config) => {
-  // console.log(testing, config, "testing, config");
 
   // Contract Factories
   testing.POD_FACTORY = await ethers.getContractFactory("PodFactory");

@@ -1,23 +1,6 @@
-const {ethers, getNamedAccounts} = require('hardhat')
-const { increaseTime } = require('../../../test/helpers/increaseTime')
-const { dim, yellow, green, cyan } = require("../../../lib/chalk_colors");
-
-async function acquirePrizePoolTicket(signer, prizePoolAddress, ticket, amount) {
-
-  const prizePool = await ethers.getContractAt('PrizePool', prizePoolAddress, signer)
-  await prizePool.depositTo(
-    signer._address,
-    amount,
-    ticket,
-    signer._address,
-  )
-
-}
+const {ethers} = require('hardhat')
 
 async function userDetails(pod, token, ticket, decimals) {
-
-  // green(`\n📈 Current Pod User Details`)
-
 
   // Token
   const accountPrimaryBalanceOfToken = await token.balanceOf('0x0000000000000000000000000000000000000001');
@@ -71,6 +54,5 @@ async function userDetails(pod, token, ticket, decimals) {
 }
 
 module.exports = { 
-  acquirePrizePoolTicket,
   userDetails
 }

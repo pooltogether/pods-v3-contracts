@@ -2,9 +2,7 @@ const {ethers, getNamedAccounts} = require('hardhat')
 const { increaseTime } = require('../../../test/helpers/increaseTime')
 const { dim, yellow, green, cyan } = require("../../../lib/chalk_colors");
 
-const { acquirePrizePoolTicket, userDetails } = require("./acquirePrizePoolTicket");
-
-
+const { userDetails } = require("./blockchainState");
 
 const ONE_DAY = 86400;
 const SEVEN_DAYS = 604800;
@@ -25,9 +23,6 @@ async function runPodLifecycle(signer, podAddress) {
 
   // Initialize Pod Contracts
   let pod = await ethers.getContractAt('Pod', podAddress, signer)
-  let podPrimary = await ethers.getContractAt('Pod', podAddress, tokenHolderPrimary)
-  let podSecondary = await ethers.getContractAt('Pod', podAddress, tokenHolderSecondary)
-  let podAdmin = await ethers.getContractAt('Pod', podAddress, tokenHolderAdmin)
   
   // Pod Constants
   const tokenAddress = await pod.token()
@@ -88,20 +83,6 @@ async function runPodLifecycle(signer, podAddress) {
   const accountShareBalanceAfterWithdraw = await pod.balanceOf(account)
   cyan(`Account Shares: ${accountShareBalanceAfterWithdraw} (Expected to be 0)`)
 
-  /* --------------------------------------- */
-  // Pod Simulate Winning using ptTokens
-  /* --------------------------------------- */
-  green(`🧝 Acquiring PrizePool Tickets`)
-  const prizePoolDirectDepositAmount = ethers.utils.parseUnits('5000', decimals)
-
-  const ticketBalanceOfPodBeforeDeposit = await ticket.balanceOf(podAddress)
-  yellow(`Pod Ticket balance before deposit: ${ethers.utils.formatUnits(ticketBalanceOfPodBeforeDeposit, decimals)}`)
-
-  // Connect Admin to PrizePool
-  prizePool =prizePool.connect(tokenHolderAdmin)
-  token = token.connect(tokenHolderAdmin)
-  await token.approve(prizePoolAddress, prizePoolDirectDepositAmount)
-
   /* ------------------------------ */
   // Pod Execute Batch after Deposits
   /* ------------------------------ */
@@ -110,7 +91,6 @@ async function runPodLifecycle(signer, podAddress) {
   await pod.depositTo(account, depositAmount)
   cyan(`Executed depositTo - Depositing 1,000 tokens into the Pod`)
 
-  
   /* --- Pod Drop --- */
   await pod.drop()
   cyan(`Executed batch - Moving deposits from Pod to PrizePool`)
@@ -212,9 +192,14 @@ async function runPodLifecycle(signer, podAddress) {
   /* --------------------------------------- */
   // Pod Simulate Winning using ptTokens
   /* --------------------------------------- */
-  green(`----- 🎟️  Deposit 5,000 PrizePool Tickets into Pod to simulate Pod Winning -----`)
+  const prizePoolDirectDepositAmount = ethers.utils.parseUnits('5000', decimals)
+  
+  green(`\n ----- 🎟️  Deposit 5,000 PrizePool Tickets into Pod to simulate Pod Winning -----`)
+  token = token.connect(tokenHolderAdmin)
   ticket = ticket.connect(tokenHolderAdmin)
   prizePool = prizePool.connect(tokenHolderAdmin)
+  
+  await token.approve(prizePoolAddress, prizePoolDirectDepositAmount)
 
   const PricePerShareBeforeWinning = await pod.getPricePerShare()
   yellow(`PricePerShare before winning: ${ethers.utils.formatUnits(PricePerShareBeforeWinning, decimals)}`)
@@ -226,28 +211,15 @@ async function runPodLifecycle(signer, podAddress) {
     podAddress,
     )
   
-
-  // let adminTicketBalance = await ticket.balanceOf(tokenHolderAdmin._address)
-  // yellow(`Admin Ticket balance after deposit: ${ethers.utils.formatUnits(adminTicketBalance, decimals)}`)
-
-  // cyan(`Ticket Transfer Start...`)
-  // await ticket.transfer(podAddress, adminTicketBalance)
-  // cyan(`Ticket Transfer Complete...`)
-
-  // const ticketBalanceOfPodAfterDeposit = await ticket.balanceOf(podAddress)
-  // yellow(`Pod Ticket balance after deposit: ${ethers.utils.formatUnits(ticketBalanceOfPodAfterDeposit, decimals)}`)
-  
   // Display Current User Details
   await userDetails(pod, token, ticket, decimals)
   
   const PricePerShareAfterWinning = await pod.getPricePerShare()
   yellow(`PricePerShare after winning: ${ethers.utils.formatUnits(PricePerShareAfterWinning, decimals)}`)
 
-  /* --- Pod Calculate Early Exit Fee (35 Days) --- */
-
-  // Fast Forward - 1 Week
-  green(`Increasing time by 1 day...`)
-  increaseTime(ONE_DAY)
+  // // Fast Forward - 1 Week
+  // green(`Increasing time by 1 day...`)
+  // increaseTime(ONE_DAY)
   
   /* --------------------------------------- */
   // Pod Burn Shares and Withdraw Collateral
@@ -255,7 +227,7 @@ async function runPodLifecycle(signer, podAddress) {
   cyan(`Burning shares and withdrawing deposited collateral (after 35 days)...`)
   
   /* --- User 1 Withdraw --- */
-  green(`\n---- 🧝 User 1 Withdraw ----`)
+  green(`\n---- 🧝 User 1 Withdraw ---- \n`)
   pod = pod.connect(tokenHolderPrimary)
   
   let acount1Balance = await pod.balanceOf(tokenHolderPrimary._address)
@@ -268,7 +240,7 @@ async function runPodLifecycle(signer, podAddress) {
   await pod.withdraw(acount1Balance, acount1EarlyExitFee)
 
   /* --- User 2 Withdraw --- */
-  green(`\n---- 🧝 User 2 Withdraw ----`)
+  green(`\n---- 🧝 User 2 Withdraw ---- \n`)
   pod = pod.connect(tokenHolderSecondary)
 
   let acount2Balance = await pod.balanceOf(tokenHolderSecondary._address)
