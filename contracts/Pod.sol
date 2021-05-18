@@ -629,7 +629,7 @@ contract Pod is
      * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current token balance.
      */
-    function _podTokenBalance() public view returns (uint256) {
+    function _podTokenBalance() internal view returns (uint256) {
         return token.balanceOf(address(this));
     }
 
