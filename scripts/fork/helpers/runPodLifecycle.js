@@ -212,30 +212,36 @@ async function runPodLifecycle(signer, podAddress) {
   /* --------------------------------------- */
   // Pod Simulate Winning using ptTokens
   /* --------------------------------------- */
-  green(`🧝 Deposit 5,000 PrizePool Tickets into Pod to simulate Pod Winning`)
+  green(`----- 🎟️  Deposit 5,000 PrizePool Tickets into Pod to simulate Pod Winning -----`)
   ticket = ticket.connect(tokenHolderAdmin)
   prizePool = prizePool.connect(tokenHolderAdmin)
+
+  const PricePerShareBeforeWinning = await pod.getPricePerShare()
+  yellow(`PricePerShare before winning: ${ethers.utils.formatUnits(PricePerShareBeforeWinning, decimals)}`)
   
   await prizePool.depositTo(
-    tokenHolderAdmin._address,
-    ethers.utils.parseUnits('5000', 18),
+    podAddress,
+    ethers.utils.parseUnits('1300', 18),
     ticketAddress,
-    tokenHolderAdmin._address,
+    podAddress,
     )
   
 
-  let adminTicketBalance = await ticket.balanceOf(tokenHolderAdmin._address)
-  yellow(`Admin Ticket balance after deposit: ${ethers.utils.formatUnits(adminTicketBalance, decimals)}`)
+  // let adminTicketBalance = await ticket.balanceOf(tokenHolderAdmin._address)
+  // yellow(`Admin Ticket balance after deposit: ${ethers.utils.formatUnits(adminTicketBalance, decimals)}`)
 
-  cyan(`Ticket Transfer Start...`)
-  await ticket.transfer(podAddress, adminTicketBalance)
-  cyan(`Ticket Transfer Complete...`)
+  // cyan(`Ticket Transfer Start...`)
+  // await ticket.transfer(podAddress, adminTicketBalance)
+  // cyan(`Ticket Transfer Complete...`)
 
-  const ticketBalanceOfPodAfterDeposit = await ticket.balanceOf(podAddress)
-  yellow(`Pod Ticket balance after deposit: ${ethers.utils.formatUnits(ticketBalanceOfPodAfterDeposit, decimals)}`)
-
+  // const ticketBalanceOfPodAfterDeposit = await ticket.balanceOf(podAddress)
+  // yellow(`Pod Ticket balance after deposit: ${ethers.utils.formatUnits(ticketBalanceOfPodAfterDeposit, decimals)}`)
+  
   // Display Current User Details
   await userDetails(pod, token, ticket, decimals)
+  
+  const PricePerShareAfterWinning = await pod.getPricePerShare()
+  yellow(`PricePerShare after winning: ${ethers.utils.formatUnits(PricePerShareAfterWinning, decimals)}`)
 
   /* --- Pod Calculate Early Exit Fee (35 Days) --- */
 
@@ -248,34 +254,39 @@ async function runPodLifecycle(signer, podAddress) {
   /* --------------------------------------- */
   cyan(`Burning shares and withdrawing deposited collateral (after 35 days)...`)
   
+  /* --- User 1 Withdraw --- */
+  green(`\n---- 🧝 User 1 Withdraw ----`)
+  pod = pod.connect(tokenHolderPrimary)
+  
+  let acount1Balance = await pod.balanceOf(tokenHolderPrimary._address)
+  let acount1BalanceOfUnderlying = await pod.balanceOfUnderlying(acount1Balance)
+  const acount1EarlyExitFee = await pod.callStatic.getEarlyExitFee(acount1BalanceOfUnderlying)
+  green(`User 1 Balance: ${ethers.utils.formatUnits(acount1Balance, decimals)}`)
+  green(`User 1 Balance Underlying: ${ethers.utils.formatUnits(acount1BalanceOfUnderlying, decimals)}`)
+  green(`User 1 Exit Fee: ${ethers.utils.formatUnits(acount1EarlyExitFee, decimals)}`)
+  
+  await pod.withdraw(acount1Balance, acount1EarlyExitFee)
+
   /* --- User 2 Withdraw --- */
-  green(`🧝 User 2 Withdraw`)
+  green(`\n---- 🧝 User 2 Withdraw ----`)
   pod = pod.connect(tokenHolderSecondary)
 
-  // Set Withdraw Amount
-  const withdrawSharesAmountSecondary = ethers.utils.parseUnits('500', decimals)
-
   let acount2Balance = await pod.balanceOf(tokenHolderSecondary._address)
-  let acount2EarlyExitFee = await pod.callStatic.getEarlyExitFee(acount2Balance)
+  let acount2BalanceOfUnderlying = await pod.balanceOfUnderlying(acount2Balance)
+  let acount2EarlyExitFee = await pod.callStatic.getEarlyExitFee(acount2BalanceOfUnderlying)
   green(`User 2 Balance: ${ethers.utils.formatUnits(acount2Balance, decimals)}`)
+  green(`User 2 Balance Underlying: ${ethers.utils.formatUnits(acount2BalanceOfUnderlying, decimals)}`)
   green(`User 2 Exit Fee: ${ethers.utils.formatUnits(acount2EarlyExitFee, decimals)}`)
 
   await pod.withdraw(acount2Balance, acount2EarlyExitFee)
 
-  /* --- User 1 Withdraw --- */
-  green(`🧝 User 1 Withdraw`)
-  pod = pod.connect(tokenHolderPrimary)
-  
-  let acount1Balance = await pod.balanceOf(tokenHolderPrimary._address)
-  const acount1EarlyExitFee = await pod.callStatic.getEarlyExitFee(acount1Balance)
-  green(`User 1 Balance: ${ethers.utils.formatUnits(acount1Balance, decimals)}`)
-  green(`User 1 Exit Fee: ${ethers.utils.formatUnits(acount1EarlyExitFee, decimals)}`)
-  
-  
-  const podExitFee  = await prizePool.callStatic.calculateEarlyExitFee(podAddress, ticketAddress, acount1Balance)
-  green(`Pod Exit Fee: ${ethers.utils.formatUnits(podExitFee[0], decimals)}`)
+  green(`\n---- Empty Pod Data and Figures -----`)
 
-  await pod.withdraw(acount1Balance, acount1EarlyExitFee)
+  const podTotalSupply  = await pod.totalSupply()
+  green(`Pod Total Supply: ${ethers.utils.formatUnits(podTotalSupply, decimals)}`)
+
+  const podExitFee  = await prizePool.callStatic.calculateEarlyExitFee(podAddress, ticketAddress, podTotalSupply)
+  green(`Pod Exit Fee: ${ethers.utils.formatUnits(podExitFee[0], decimals)}`)
   
   // Display Current User Details
   await userDetails(pod, token, ticket, decimals)
