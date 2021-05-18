@@ -513,7 +513,6 @@ contract Pod is
         uint256 currentBalance = token.balanceOf(address(this));
 
         uint256 actualAmount;
-
         // Withdrawal Exceeds Current Token Balance
         if (amount > currentBalance) {
             // Calculate withdrawal request amount
@@ -560,6 +559,24 @@ contract Pod is
         uint256 totalWithdrawn = balanceAfter.sub(balanceBefore);
 
         return totalWithdrawn;
+    }
+
+    /**
+     * @notice Pod current token balance.
+     * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
+     * @return uint256 Pod's current token balance.
+     */
+    function _podTokenBalance() internal view returns (uint256) {
+        return token.balanceOf(address(this));
+    }
+
+    /**
+     * @notice Pod current ticket balance.
+     * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
+     * @return uint256 Pod's current ticket balance.
+     */
+    function _podTicketBalance() internal view returns (uint256) {
+        return ticket.balanceOf(address(this));
     }
 
     /***********************************|
@@ -623,24 +640,6 @@ contract Pod is
         returns (uint256 amount)
     {
         return (balance().mul(shares)).div(totalSupply());
-    }
-
-    /**
-     * @notice Pod current token balance.
-     * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
-     * @return uint256 Pod's current token balance.
-     */
-    function _podTokenBalance() internal view returns (uint256) {
-        return token.balanceOf(address(this));
-    }
-
-    /**
-     * @notice Pod current ticket balance.
-     * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
-     * @return uint256 Pod's current ticket balance.
-     */
-    function _podTicketBalance() internal view returns (uint256) {
-        return ticket.balanceOf(address(this));
     }
 
     /**
