@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
 
+import "hardhat/console.sol";
 // Libraries
 import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
@@ -514,6 +515,8 @@ contract Pod is
 
         uint256 actualAmount;
         // Withdrawal Exceeds Current Token Balance
+
+        console.log("MaxFee", maxFee);
         if (amount > currentBalance) {
             // Calculate withdrawal request amount
             uint256 withdrawRequest = amount.sub(currentBalance);
@@ -545,6 +548,7 @@ contract Pod is
 
         uint256 balanceBefore = _token.balanceOf(address(this));
 
+        console.log("Max Fee Exit", maxFee);
         // Withdraw from Prize Pool
         _prizePool.withdrawInstantlyFrom(
             address(this),

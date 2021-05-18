@@ -28,22 +28,27 @@ module.exports = {
       default: 1,
     },
     prizePoolDAI: {
+      default: "0xEBfb47A7ad0FD6e57323C8A42B2E5A6a4F68fc1a", // mainnet
       1: "0xEBfb47A7ad0FD6e57323C8A42B2E5A6a4F68fc1a", // mainnet
       4: "0x84ed0f89c033fe7dadfc4d5f2a516ebd9dc15644", // rinkeby
     },
     prizePoolUSDC: {
+      default: "0xde9ec95d7708b8319ccca4b8bc92c0a3b70bf416", // mainnet
       1: "0xde9ec95d7708b8319ccca4b8bc92c0a3b70bf416", // mainnet
       4: "0xde5275536231eCa2Dd506B9ccD73C028e16a9a32", // rinkeby
     },
     prizePoolCOMP: {
+      default: "0xBC82221e131c082336cf698F0cA3EBd18aFd4ce7", // mainnet
       1: "0xBC82221e131c082336cf698F0cA3EBd18aFd4ce7", // mainnet
       4: "", // rinkeby
     },
     prizePoolUNI: {
+      default: "0x0650d780292142835F6ac58dd8E2a336e87b4393", // mainnet
       1: "0x0650d780292142835F6ac58dd8E2a336e87b4393", // mainnet
       4: "", // rinkeby
     },
     prizePoolPOOL: {
+      default: "0x396b4489da692788e327E2e4b2B0459A5Ef26791", // mainnet
       1: "0x396b4489da692788e327E2e4b2B0459A5Ef26791", // mainnet
       4: "", // rinkeby
     },
@@ -52,6 +57,7 @@ module.exports = {
       4: "0xab068F220E10eEd899b54F1113dE7E354c9A8eB7", // rinkeby
     },
     reserveRegistry: {
+      default: "0x3e8b9901dBFE766d3FE44B36c180A1bca2B9A295", // mainnet
       1: "0x3e8b9901dBFE766d3FE44B36c180A1bca2B9A295", // mainnet
       4: "0xaDae16a9A1B648Cdc753558Dc19780Ea824a3904", // rinkeby
       42: "0xdcC0D09beE9726E23256ebC059B7487Cd78F65a0", // kovan
@@ -63,24 +69,31 @@ module.exports = {
       97: "0x3e8b9901dBFE766d3FE44B36c180A1bca2B9A295", //bscTestnet
     },
     WETH: {
+      default: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // mainnet
       1: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // mainnet
     },
     DAI: {
+      default: "0x6b175474e89094c44da98b954eedeac495271d0f", // mainnet
       1: "0x6b175474e89094c44da98b954eedeac495271d0f", // mainnet
     },
     USDC: {
+      default: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // mainnet
       1: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // mainnet
     },
     COMP: {
+      default: "0xc00e94cb662c3520282e6f5717214004a7f26888", // mainnet
       1: "0xc00e94cb662c3520282e6f5717214004a7f26888", // mainnet
     },
     UNI: {
+      default: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", // mainnet
       1: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", // mainnet
     },
     POOL: {
+      default: "0x0cEC1A9154Ff802e7934Fc916Ed7Ca50bDE6844e", // mainnet
       1: "0x0cEC1A9154Ff802e7934Fc916Ed7Ca50bDE6844e", // mainnet
     },
     UniswapRouter: {
+      default: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // mainnet
       1: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // mainnet
     },
   },

@@ -13,7 +13,7 @@ const { getNamedAccounts } = hardhat
 async function run() {
   console.log(chalk.dim(`Gathering funds from Binance....`))
   const { ethers } = hardhat
-  const { provider, getContractAt } = ethers
+  const { provider } = ethers
   const { deployer } = await getNamedAccounts()
   
   const binance = await provider.getUncheckedSigner('0x564286362092D8e7936f0549571a803B203aAceD')
@@ -30,10 +30,13 @@ async function run() {
     ['BUSD Holder']: BUSD_HOLDER,
     ['SUSD Holder']: SUSD_HOLDER,
     ['POD Token Holder']: POD_TOKEN_HOLDER,
-    ['POOL Wallet']: '0x21950e281bde1714ffd1062ed17c56d4d8de2359'
+    ['Deployer Holder']: deployer,
+    ['POOL Wallet']: '0x21950e281bde1714ffd1062ed17c56d4d8de2359',
   }
 
   const keys = Object.keys(recipients)
+
+  console.log(deployer, 'deployer')
 
   for (var i = 0; i < keys.length; i++) {
     const name = keys[i]

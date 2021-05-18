@@ -2,6 +2,9 @@ const {ethers, getNamedAccounts} = require('hardhat')
 const { increaseTime } = require('../../../test/helpers/increaseTime')
 const { dim, yellow, green, cyan } = require("../../../lib/chalk_colors");
 
+const { acquirePrizePoolTicket, userDetails } = require("./acquirePrizePoolTicket");
+
+
 
 const ONE_DAY = 86400;
 const SEVEN_DAYS = 604800;
@@ -11,13 +14,24 @@ const FIFITY_SIX_DAYS = 4838400;
 async function runPodLifecycle(signer, podAddress) {
   const namedAccounts = await getNamedAccounts()
   const account = signer._address
+
+  // Account Helpers
+  const tokenHolderPrimary = await ethers.provider.getUncheckedSigner('0x0000000000000000000000000000000000000001')
+  const tokenHolderSecondary = await ethers.provider.getUncheckedSigner('0x0000000000000000000000000000000000000002')
+  const tokenHolderAdmin = await ethers.provider.getUncheckedSigner('0x0000000000000000000000000000000000000003')
+
+
   yellow(`Pod Depositor: ${account}`)
 
   // Initialize Pod Contracts
-  const pod = await ethers.getContractAt('Pod', podAddress, signer)
+  let pod = await ethers.getContractAt('Pod', podAddress, signer)
+  let podPrimary = await ethers.getContractAt('Pod', podAddress, tokenHolderPrimary)
+  let podSecondary = await ethers.getContractAt('Pod', podAddress, tokenHolderSecondary)
+  let podAdmin = await ethers.getContractAt('Pod', podAddress, tokenHolderAdmin)
   
   // Pod Constants
   const tokenAddress = await pod.token()
+  const ticketAddress = await pod.ticket()
   const prizePoolAddress = await pod.prizePool()
   const tokenDropAddress = await pod.tokenDrop()
 
@@ -25,10 +39,11 @@ async function runPodLifecycle(signer, podAddress) {
   green(`PrizePool Address: ${prizePoolAddress}`)
   green(`TokenDrop Address: ${tokenDropAddress}`)
   
-  const pool = await ethers.getContractAt('ERC20Upgradeable', namedAccounts.POOL, signer)
-  const token = await ethers.getContractAt('ERC20Upgradeable', tokenAddress, signer)
-  const prizePool = await ethers.getContractAt('PrizePool', prizePoolAddress, signer)
-  const tokenDrop = await ethers.getContractAt('TokenDrop', tokenDropAddress, signer)
+  let pool = await ethers.getContractAt('ERC20Upgradeable', namedAccounts.POOL, signer)
+  let token = await ethers.getContractAt('ERC20Upgradeable', tokenAddress, signer)
+  let ticket = await ethers.getContractAt('ERC20Upgradeable', ticketAddress, signer)
+  let prizePool = await ethers.getContractAt('PrizePool', prizePoolAddress, signer)
+  let tokenDrop = await ethers.getContractAt('TokenDrop', tokenDropAddress, signer)
   
   // PrizePool Constants
   const prizeStrategyAddress = await prizePool.prizeStrategy()
@@ -72,6 +87,20 @@ async function runPodLifecycle(signer, podAddress) {
   /* --- Pod Confirm Balance (After Withdraw) --- */
   const accountShareBalanceAfterWithdraw = await pod.balanceOf(account)
   cyan(`Account Shares: ${accountShareBalanceAfterWithdraw} (Expected to be 0)`)
+
+  /* --------------------------------------- */
+  // Pod Simulate Winning using ptTokens
+  /* --------------------------------------- */
+  green(`🧝 Acquiring PrizePool Tickets`)
+  const prizePoolDirectDepositAmount = ethers.utils.parseUnits('5000', decimals)
+
+  const ticketBalanceOfPodBeforeDeposit = await ticket.balanceOf(podAddress)
+  yellow(`Pod Ticket balance before deposit: ${ethers.utils.formatUnits(ticketBalanceOfPodBeforeDeposit, decimals)}`)
+
+  // Connect Admin to PrizePool
+  prizePool =prizePool.connect(tokenHolderAdmin)
+  token = token.connect(tokenHolderAdmin)
+  await token.approve(prizePoolAddress, prizePoolDirectDepositAmount)
 
   /* ------------------------------ */
   // Pod Execute Batch after Deposits
@@ -131,9 +160,38 @@ async function runPodLifecycle(signer, podAddress) {
   const claimedPodUserReward7Days = await pool.balanceOf(account)
   yellow(`User POOL claimed rewards: ${ethers.utils.formatUnits(claimedPodUserReward7Days, 18)}`)
 
+  /* --------------------------------------- */
+  // Second Account Deposit
+  /* --------------------------------------- */
+  green(`🧝 Simulating Secondary Account Interactions`)
+
+  // Initialize Pod Contracts
+  pod = pod.connect(tokenHolderSecondary)
+  token = token.connect(tokenHolderSecondary)
+
+  const depositAmountSecondary = ethers.utils.parseUnits('500', decimals)
+
+  /* --- Token Setup --- */
+  await token.approve(podAddress, depositAmountSecondary)
+  cyan(`Secondary User approved 500 for deposit into Pod`)
+  
+  let userSecondaryBalanceBeforeDeposit = await token.balanceOf(tokenHolderSecondary._address)
+  yellow(`User token balance before deposit: ${ethers.utils.formatUnits(userSecondaryBalanceBeforeDeposit, 18)}`)
+  
+  /* --- Pod Deposit (No Batch) --- */
+  await pod.depositTo(tokenHolderSecondary._address, depositAmountSecondary)
+  cyan(`Executed depositTo - Secondary User depositing 500 tokens into the Pod`)
+  
+  let userSecondaryBalanceAfterDeposit = await token.balanceOf(tokenHolderSecondary._address)
+  yellow(`User token balance before deposit: ${ethers.utils.formatUnits(userSecondaryBalanceAfterDeposit, 18)}`)
+
+  // Display Current User Details
+  await userDetails(pod, token, ticket, decimals)
+
   /* ----------------------------------- */
   // Pod & User Claim Rewards after 35 Days
   /* ----------------------------------- */
+  pod = pod.connect(tokenHolderPrimary)
 
   // Fast Forward - 4 Week
   green(`Increasing time by 4 weeks (28 days)...`)
@@ -147,28 +205,81 @@ async function runPodLifecycle(signer, podAddress) {
   
   /* --- User Calculate POOL Reward --- */
   cyan(`Claiming user POOL rewards (after 35 days)...`)
-  await tokenDrop.claim(account)
-  const claimedPodUserReward28Days = await pool.balanceOf(account)
+  await tokenDrop.claim(tokenHolderPrimary._address)
+  const claimedPodUserReward28Days = await pool.balanceOf(tokenHolderPrimary._address)
   yellow(`User POOL claimed rewards: ${ethers.utils.formatUnits(claimedPodUserReward28Days, 18)}`)
+  
+  /* --------------------------------------- */
+  // Pod Simulate Winning using ptTokens
+  /* --------------------------------------- */
+  green(`🧝 Deposit 5,000 PrizePool Tickets into Pod to simulate Pod Winning`)
+  ticket = ticket.connect(tokenHolderAdmin)
+  prizePool = prizePool.connect(tokenHolderAdmin)
+  
+  await prizePool.depositTo(
+    tokenHolderAdmin._address,
+    ethers.utils.parseUnits('5000', 18),
+    ticketAddress,
+    tokenHolderAdmin._address,
+    )
+  
 
+  let adminTicketBalance = await ticket.balanceOf(tokenHolderAdmin._address)
+  yellow(`Admin Ticket balance after deposit: ${ethers.utils.formatUnits(adminTicketBalance, decimals)}`)
+
+  cyan(`Ticket Transfer Start...`)
+  await ticket.transfer(podAddress, adminTicketBalance)
+  cyan(`Ticket Transfer Complete...`)
+
+  const ticketBalanceOfPodAfterDeposit = await ticket.balanceOf(podAddress)
+  yellow(`Pod Ticket balance after deposit: ${ethers.utils.formatUnits(ticketBalanceOfPodAfterDeposit, decimals)}`)
+
+  // Display Current User Details
+  await userDetails(pod, token, ticket, decimals)
 
   /* --- Pod Calculate Early Exit Fee (35 Days) --- */
-  cyan(`Calculating exit fees on 1,000 DAI after 35 days`)
-  const getEarlyExitFee35Days = await pod.callStatic.getEarlyExitFee(accountShareBalancePostDrop)
-  yellow(`35 Days Early Exit Fee: ${ethers.utils.formatUnits(getEarlyExitFee35Days, decimals)}`)
 
+  // Fast Forward - 1 Week
+  green(`Increasing time by 1 day...`)
+  increaseTime(ONE_DAY)
+  
   /* --------------------------------------- */
   // Pod Burn Shares and Withdraw Collateral
   /* --------------------------------------- */
   cyan(`Burning shares and withdrawing deposited collateral (after 35 days)...`)
   
-  const tokenBalanceBeforeWithdraw = await token.balanceOf(account)
-  yellow(`User Token balance before withdraw: ${ethers.utils.formatUnits(tokenBalanceBeforeWithdraw, decimals)}`)
+  /* --- User 2 Withdraw --- */
+  green(`🧝 User 2 Withdraw`)
+  pod = pod.connect(tokenHolderSecondary)
+
+  // Set Withdraw Amount
+  const withdrawSharesAmountSecondary = ethers.utils.parseUnits('500', decimals)
+
+  let acount2Balance = await pod.balanceOf(tokenHolderSecondary._address)
+  let acount2EarlyExitFee = await pod.callStatic.getEarlyExitFee(acount2Balance)
+  green(`User 2 Balance: ${ethers.utils.formatUnits(acount2Balance, decimals)}`)
+  green(`User 2 Exit Fee: ${ethers.utils.formatUnits(acount2EarlyExitFee, decimals)}`)
+
+  await pod.withdraw(acount2Balance, acount2EarlyExitFee)
+
+  /* --- User 1 Withdraw --- */
+  green(`🧝 User 1 Withdraw`)
+  pod = pod.connect(tokenHolderPrimary)
   
-  await pod.withdraw(withdrawSharesAmount, 0)
+  let acount1Balance = await pod.balanceOf(tokenHolderPrimary._address)
+  const acount1EarlyExitFee = await pod.callStatic.getEarlyExitFee(acount1Balance)
+  green(`User 1 Balance: ${ethers.utils.formatUnits(acount1Balance, decimals)}`)
+  green(`User 1 Exit Fee: ${ethers.utils.formatUnits(acount1EarlyExitFee, decimals)}`)
   
-  const tokenBalanceAfterWithdraw = await token.balanceOf(account)
-  yellow(`User Token after before withdraw: ${ethers.utils.formatUnits(tokenBalanceAfterWithdraw, decimals)}`)
+  
+  const podExitFee  = await prizePool.callStatic.calculateEarlyExitFee(podAddress, ticketAddress, acount1Balance)
+  green(`Pod Exit Fee: ${ethers.utils.formatUnits(podExitFee[0], decimals)}`)
+
+  await pod.withdraw(acount1Balance, acount1EarlyExitFee)
+  
+  // Display Current User Details
+  await userDetails(pod, token, ticket, decimals)
+
 }
 
 module.exports = {

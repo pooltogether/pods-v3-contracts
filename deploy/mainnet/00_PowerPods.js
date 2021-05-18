@@ -26,8 +26,6 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       18
     );
 
-    await getPodAndDropAddress(createDAI.transactionHash, deployments, "DAI");
-
     const createUSDC = await execute(
       "PodFactory",
       {
@@ -41,37 +39,36 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       18
     );
 
+    // const createUNI = await execute(
+    //   "PodFactory",
+    //   {
+    //     from: deployer,
+    //   },
+    //   "create",
+    //   CONFIG.podUNI.prizePool,
+    //   CONFIG.podUNI.ticket,
+    //   CONFIG.podUNI.faucet,
+    //   deployer,
+    //   6
+    // );
+
+    // const createCOMP = await execute(
+    //   "PodFactory",
+    //   {
+    //     from: deployer,
+    //   },
+    //   "create",
+    //   CONFIG.podCOMP.prizePool,
+    //   CONFIG.podCOMP.ticket,
+    //   CONFIG.podCOMP.faucet,
+    //   deployer,
+    //   18
+    // );
+
+    await getPodAndDropAddress(createDAI.transactionHash, deployments, "DAI");
     await getPodAndDropAddress(createUSDC.transactionHash, deployments, "USDC");
-
-    const createUNI = await execute(
-      "PodFactory",
-      {
-        from: deployer,
-      },
-      "create",
-      CONFIG.podUNI.prizePool,
-      CONFIG.podUNI.ticket,
-      CONFIG.podUNI.faucet,
-      deployer,
-      6
-    );
-
-    await getPodAndDropAddress(createUNI.transactionHash, deployments, "UNI");
-
-    const createCOMP = await execute(
-      "PodFactory",
-      {
-        from: deployer,
-      },
-      "create",
-      CONFIG.podCOMP.prizePool,
-      CONFIG.podCOMP.ticket,
-      CONFIG.podCOMP.faucet,
-      deployer,
-      18
-    );
-
-    await getPodAndDropAddress(createCOMP.transactionHash, deployments, "COMP");
+    // await getPodAndDropAddress(createUNI.transactionHash, deployments, "UNI");
+    // await getPodAndDropAddress(createCOMP.transactionHash, deployments, "COMP");
   }
 };
 
