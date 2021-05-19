@@ -115,10 +115,15 @@ contract Pod is
     |__________________________________*/
 
     /**
-     * @dev Checks is the caller is an active PodManager
+     * @dev Checks is the caller is a manager or owner.
      */
-    modifier onlyManager() {
-        require(manager == _msgSender(), "Pod:manager-unauthorized");
+
+    modifier onlyOwnerOrManager() {
+        address _sender = _msgSender();
+        require(
+            manager == _sender || owner() == _sender,
+            "Pod:manager-unauthorized"
+        );
         _;
     }
 
@@ -409,7 +414,7 @@ contract Pod is
     function withdrawERC20(IERC20Upgradeable _target, uint256 amount)
         external
         override
-        onlyManager
+        onlyOwnerOrManager
         returns (bool)
     {
         // Lock token/ticket/pool ERC20 transfers
@@ -441,7 +446,7 @@ contract Pod is
     function withdrawERC721(IERC721Upgradeable _target, uint256 tokenId)
         external
         override
-        onlyManager
+        onlyOwnerOrManager
         returns (bool)
     {
         // Transfer ERC721
@@ -629,7 +634,7 @@ contract Pod is
      * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
      * @return uint256 Pod's current token balance.
      */
-    function _podTokenBalance() public view returns (uint256) {
+    function _podTokenBalance() internal view returns (uint256) {
         return token.balanceOf(address(this));
     }
 
