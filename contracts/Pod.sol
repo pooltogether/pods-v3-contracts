@@ -367,8 +367,6 @@ contract Pod is
         onlyOwner
         returns (bool)
     {
-        require(address(_faucet) != address(0), "Pod:invalid-faucet-contract");
-
         // Set TokenFaucet
         faucet = _faucet;
 
