@@ -6,6 +6,8 @@ interface TokenFaucet {
 
     function asset() external returns (address);
 
+    function measure() external returns (address);
+
     function dripRatePerSecond() external returns (uint256);
 
     function exchangeRateMantissa() external returns (uint112);

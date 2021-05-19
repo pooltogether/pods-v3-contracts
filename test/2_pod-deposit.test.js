@@ -1,355 +1,295 @@
 const hardhat = require("hardhat");
 const { ethers } = require("hardhat");
-const { expect, assert } = require("chai");
-const { constants, utils } = require("ethers");
+const { expect } = require("chai");
+const { utils } = require("ethers");
 
-require("./helpers/chaiMatchers");
-const { getConfig } = require("../lib/config");
-const { purchaseToken } = require("../lib/uniswap");
-const { advanceTimeAndBlock } = require("./utilities/time");
-const { toWei } = require("./utilities/bignumbers");
 const {
-  setupSigners,
-  createPodAndTokenDrop,
-  setupContractFactories,
-  createPeripheryContract,
-} = require("./utilities/contracts");
+  mockERC20,
+  mockERC20InitializeBasics,
+  mockSafeERC20,
+  mockPrizePool,
+  mockPrizePoolInitializeBasics,
+  mockTokenFaucet,
+  mockTokenFaucetInitializeBasics,
+  mockPrizeStrategy,
+} = require("./helpers/mocks");
 
 describe("Pod - Deposit", function () {
-  const config = getConfig("mainnet");
-  let testing = {};
+  let wallet;
+  let walletAddress;
+  let pod, tokenDrop;
+
+  let mockedPrizePool,
+    mockedToken,
+    mockedReward,
+    mockedTokenFaucet,
+    mockedPrizeStategy;
+  let POD_FACTORY, TOKEN_DROP_FACTORY;
+  let podFactory, tokenDropFactory;
+
+  let provider;
 
   before(async () => {
     provider = hardhat.ethers.provider;
-    testing = await setupSigners(testing);
-    testing = await setupContractFactories(testing);
-    testing = await createPeripheryContract(testing, config);
 
-    // Acquire PrizePool Token
-    await purchaseToken(
-      config.tokens.WETH,
-      config.podDAI.token,
-      ethers.utils.parseEther("500"),
-      testing.owner.address,
+    [wallet, wallet2, wallet3, wallet4] = await ethers.getSigners();
+    walletAddress = wallet.address;
+
+    POD_FACTORY = await ethers.getContractFactory("PodFactory");
+    TOKEN_DROP_FACTORY = await ethers.getContractFactory("TokenDropFactory");
+
+    mockedToken = await mockSafeERC20(wallet);
+    mockedToken = await mockERC20InitializeBasics(await mockERC20(wallet), {
+      name: "Token Test",
+      symbol: "TEST",
+    });
+    mockedTicket = await mockERC20InitializeBasics(await mockERC20(wallet), {
+      name: "Token Ticket",
+      symbol: "TICKET",
+    });
+    mockedReward = await mockERC20InitializeBasics(await mockERC20(wallet), {
+      name: "Token Reward",
+      symbol: "RWRD",
+    });
+
+    mockedTokenFaucet = await mockTokenFaucetInitializeBasics(
+      await mockTokenFaucet(wallet),
       {
-        UniswapRouter: config.contracts.UniswapRouter,
-        exactAmount: true,
+        measure: mockedReward.mockedToken,
+        asset: mockedReward.address,
       }
     );
+
+    mockedPrizeStrategy = await mockPrizeStrategy(wallet);
+    mockedPrizeStrategy.mock.isRngRequested.returns(false);
+    mockedPrizePool = await mockPrizePoolInitializeBasics(
+      await mockPrizePool(wallet),
+      {
+        faucet: mockedTokenFaucet.address,
+        token: mockedToken.address,
+      }
+    );
+
+    mockedPrizePool.mock.prizeStrategy.returns(mockedPrizeStrategy.address);
   });
 
+  /******************|
+  | Before Each
+  /******************/
   beforeEach(async () => {
-    const [pod, tokenDrop] = await createPodAndTokenDrop(testing, config);
-    testing.pod = await ethers.getContractAt("Pod", pod);
-    testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDrop);
+    tokenDropFactory = await TOKEN_DROP_FACTORY.deploy();
+    podFactory = await POD_FACTORY.deploy(tokenDropFactory.address);
+
+    await mockedPrizePool.mock.token.returns(mockedToken.address);
+    await mockedPrizePool.mock.tokens.returns([
+      mockedTicket.address,
+      mockedTicket.address,
+    ]);
+
+    // Read Future Pod Address
+    podAddress = await podFactory.callStatic.create(
+      mockedPrizePool.address,
+      mockedTicket.address,
+      mockedTokenFaucet.address,
+      walletAddress,
+      18
+    );
+
+    // Create Pod
+    pod = await podFactory.create(
+      mockedPrizePool.address,
+      mockedTicket.address,
+      mockedTokenFaucet.address,
+      walletAddress,
+      18
+    );
+
+    pod = await ethers.getContractAt("Pod", podAddress);
+    tokenDrop = await ethers.getContractAt("TokenDrop", await pod.tokenDrop());
   });
 
-  it("should fail when depositing 0", async function () {
-    await expect(
-      testing.pod.depositTo(testing.owner.address, utils.parseEther("0"))
-    ).to.be.revertedWith("Pod:invalid-amount");
-  });
+  // it("should have the correct name", async function () {
+  //   const tName = await mockedToken.name();
 
-  it("should succeed when depositing above 0", async function () {
-    // approve()
-    await testing.token.approve(testing.pod.address, utils.parseEther("1000"));
+  //   // Pod Name
+  //   const name = await pod.name();
+  //   expect(name).equal(`Pod ${tName}`);
+  // });
 
-    // depositTo()
-    const depositTo = await testing.pod.depositTo(
-      testing.alice.address,
-      utils.parseEther("1000")
-    );
+  // it("should have the correct symbol", async function () {
+  //   const tSymbol = await mockedToken.symbol();
 
-    // getTransactionReceipt(depositTo.hash)
-    let receipt = await provider.getTransactionReceipt(depositTo.hash);
+  //   // Pod Symbol
+  //   const symbol = await pod.symbol();
+  //   expect(symbol).equal(`p${tSymbol}`);
+  // });
 
-    // Check All Events
-    expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
-      "Transfer"
-    );
-    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
-      "Transfer"
-    );
-    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
-      "Deposited"
-    );
-  });
+  // it("should have the correct prize pool", async function () {
+  //   // PrizePool
+  //   const prizePool = await pod.prizePool();
+  //   expect(prizePool).equal(mockedPrizePool.address);
+  // });
 
-  it("should succeed when depositing twice and have equal deposits and shares", async function () {
-    // approve()
-    await testing.token.approve(testing.pod.address, utils.parseEther("2000"));
+  // it("should have the correct deposit token", async function () {
+  //   // Token
+  //   const token = await pod.token();
+  //   const prizePoolToken = await mockedPrizePool.token();
+  //   expect(token).equal(prizePoolToken);
+  // });
 
-    // depositTo()
-    const depositTo = await testing.pod.depositTo(
-      testing.alice.address,
-      utils.parseEther("1000")
-    );
+  // it("should have the correct ticket token", async function () {
+  //   // Ticket
+  //   const ticket = await pod.ticket();
+  //   expect(ticket).equal(mockedTicket.address);
+  // });
 
-    // getTransactionReceipt(depositTo.hash)
-    let receipt = await provider.getTransactionReceipt(depositTo.hash);
+  // it("should have 1 as default for price per share", async function () {
+  //   const getPricePerShare = await pod.getPricePerShare();
+  //   expect(getPricePerShare).equal(utils.parseEther("1"));
+  // });
 
-    // Check All Events
-    expect(testing.pod.interface.parseLog(receipt.logs[0]).name).to.equal(
-      "Transfer"
-    );
-    expect(testing.pod.interface.parseLog(receipt.logs[1]).name).to.equal(
-      "Transfer"
-    );
-    expect(testing.pod.interface.parseLog(receipt.logs[2]).name).to.equal(
-      "Deposited"
-    );
+  // it("should have 2 as default for price per share", async function () {
+  //   await mockedToken.mock.transferFrom
+  //     .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+  //     .returns(true);
 
-    // Second depositTo()
+  //   await pod.depositTo(walletAddress, utils.parseEther("1000"));
 
-    // depositTo()
-    const depositToSecond = testing.pod.depositTo(
-      testing.owner.address,
-      utils.parseEther("1000")
-    );
+  //   await mockedToken.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("2000"));
+  //   await mockedTicket.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("0"));
 
-    // Event LogLiquidatedERC721
-    await expect(depositToSecond)
-      .to.emit(testing.pod, "Deposited")
-      .withArgs(
-        testing.owner.address,
-        utils.parseEther("1000"),
-        utils.parseEther("1000")
-      );
+  //   const balanceOfUnderlying = await pod.getPricePerShare();
+  //   expect(balanceOfUnderlying).equal(utils.parseEther("2"));
+  // });
 
-    // depositTo()
-    const totalSupply = await testing.pod.totalSupply();
+  // it("should have 0 as default for balance underlying with no deposits", async function () {
+  //   const balanceOfUnderlying = await pod.balanceOfUnderlying("1000");
+  //   expect(balanceOfUnderlying).equal(utils.parseEther("0"));
+  // });
 
-    expect(totalSupply).equal(utils.parseEther("2000"));
-  });
+  // it("the share amount should match the underlying balance", async function () {
+  //   await mockedToken.mock.transferFrom
+  //     .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+  //     .returns(true);
 
-  describe("Single User [ @skip-on-coverage ]", function () {
-    /******************|
-      | Before Each
-    /******************/
-    beforeEach(async () => {
-      // ZERO out Alice's token balance
-      testing.token = testing.token.connect(testing.alice);
-      await testing.token.transfer(
-        constants.AddressZero,
-        await testing.token.balanceOf(testing.alice.address)
-      );
+  //   await pod.depositTo(walletAddress, utils.parseEther("1000"));
 
-      testing.token = testing.token.connect(testing.owner);
-      await testing.token.transfer(testing.alice.address, toWei("2000"));
-    });
+  //   await mockedToken.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("1000"));
+  //   await mockedTicket.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("0"));
 
-    it("should deposit token, run batch and burn all shares for total Pod balance [ @skip-on-coverage ]", async function () {
-      testing.pod = testing.pod.connect(testing.alice);
-      testing.token = testing.token.connect(testing.alice);
+  //   const balanceOfUnderlying = await pod.balanceOfUnderlying("1000");
+  //   expect(balanceOfUnderlying).equal("1000");
+  // });
 
-      // Check Balance
-      const balance = await testing.token.balanceOf(testing.alice.address);
+  // it("pod should revert when depositing 0 tokens", async function () {
+  //   await expect(
+  //     pod.depositTo(walletAddress, utils.parseEther("0"))
+  //   ).to.be.revertedWith("Pod:invalid-amount");
+  // });
 
-      // approve()
-      await testing.token.approve(testing.pod.address, balance);
+  // it("should succeed when depositing above 0", async function () {
+  //   await mockedToken.mock.transferFrom
+  //     .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+  //     .returns(true);
 
-      // Control Next Time/Block Increase
-      await advanceTimeAndBlock(1);
+  //   // depositTo()
+  //   const depositTo = await pod.depositTo(
+  //     walletAddress,
+  //     utils.parseEther("1000")
+  //   );
 
-      // depositTo()
-      await testing.pod.depositTo(
-        testing.alice.address,
-        utils.parseEther("2000")
-      );
+  //   // getTransactionReceipt(depositTo.hash)
+  //   let receipt = await provider.getTransactionReceipt(depositTo.hash);
 
-      // getPricePerShare()
-      const getPricePerShare = await testing.pod.getPricePerShare();
-      expect(getPricePerShare).equal(utils.parseEther("1"));
-      assert.equal(getPricePerShare.toString(), utils.parseEther("1"));
+  //   // Check All Events
+  //   expect(pod.interface.parseLog(receipt.logs[0]).name).to.equal("Transfer");
+  //   expect(pod.interface.parseLog(receipt.logs[1]).name).to.equal("Deposited");
+  // });
 
-      // getUserPricePerShare() with deposited balance
-      const getUserPricePerShare = await testing.pod.getUserPricePerShare(
-        testing.owner.address
-      );
+  // it("should have 0 balance when pod is empty", async function () {
+  //   await mockedToken.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("0"));
+  //   await mockedTicket.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("0"));
 
-      expect(getUserPricePerShare).equal(utils.parseEther("0"));
+  //   const balance = await pod.balance();
 
-      // Control Next Time/Block Increase
-      await advanceTimeAndBlock(1);
+  //   expect(balance).equal(utils.parseEther("0"));
+  // });
 
-      // batch()
-      await testing.pod.batch(
-        await testing.token.balanceOf(testing.pod.address)
-      );
+  // it("should have 0 exit fee when float is sufficient", async function () {
+  //   await mockedToken.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("1000"));
 
-      // -----------------
-      // Check Pod State
-      // -----------------
-      const podTickets = await testing.pod.vaultTicketBalance();
-      const totalSupply = await testing.pod.totalSupply();
+  //   const getEarlyExitFee = await pod.callStatic.getEarlyExitFee(
+  //     utils.parseEther("500")
+  //   );
 
-      // Pod Ticket == Total Supply
-      expect(podTickets).to.equal(totalSupply);
+  //   expect(getEarlyExitFee).equal(utils.parseEther("0"));
+  // });
+  // it("should calculate the exit fee using the prizePool when float is insufficient", async function () {
+  //   await mockedToken.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("1000"));
 
-      // pod.balanceOf(owner)
-      const ownerBalancePreWithdraw = await testing.pod.balanceOf(
-        testing.alice.address
-      );
+  //   await mockedPrizePool.mock.calculateEarlyExitFee
+  //     .withArgs(pod.address, mockedTicket.address, utils.parseEther("500"))
+  //     .returns(utils.parseEther("5"), utils.parseEther("5"));
 
-      expect(ownerBalancePreWithdraw).to.equal(utils.parseEther("2000"));
+  //   const getEarlyExitFee = await pod.callStatic.getEarlyExitFee(
+  //     utils.parseEther("1500")
+  //   );
 
-      // -----------------
-      // Withdraw Tokens
-      // -----------------
-      // Control Next Time/Block Increase
-      await advanceTimeAndBlock(1);
+  //   expect(getEarlyExitFee).equal(utils.parseEther("5"));
+  // });
 
-      const getEarlyExitFee = await testing.pod.callStatic.getEarlyExitFee(
-        utils.parseEther("2000")
-      );
+  // it("should batch succesfully", async function () {
+  //   await mockedToken.mock.transferFrom
+  //     .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+  //     .returns(true);
 
-      // pod.withdraw(2000 ppToken) - convert shares to token
-      await testing.pod.withdraw(utils.parseEther("2000"), getEarlyExitFee);
+  //   await pod.depositTo(walletAddress, utils.parseEther("1000"));
 
-      expect(await testing.pod.balanceOf(testing.alice.address)).to.equal(
-        toWei("0")
-      );
-      expect(await testing.token.balanceOf(testing.alice.address)).to.equalish(
-        toWei("1980"),
-        toWei("3")
-      );
-    });
-  });
+  //   await mockedToken.mock.balanceOf
+  //     .withArgs(pod.address)
+  //     .returns(utils.parseEther("1000"));
 
-  describe("Multiple Users [ @skip-on-coverage ]", function () {
-    beforeEach(async () => {
-      // ZERO out Alice's token balance
-      testing.token = testing.token.connect(testing.alice);
-      await testing.token.transfer(
-        constants.AddressZero,
-        await testing.token.balanceOf(testing.alice.address)
-      );
+  //   await mockedToken.mock.approve
+  //     .withArgs(mockedPrizePool.address, utils.parseEther("1000"))
+  //     .returns(true);
 
-      // ZERO out Bob's token balance
-      testing.token = testing.token.connect(testing.bob);
-      await testing.token.transfer(
-        constants.AddressZero,
-        await testing.token.balanceOf(testing.bob.address)
-      );
+  //   await mockedPrizePool.mock.depositTo
+  //     .withArgs(
+  //       mockedPrizePool.address,
+  //       utils.parseEther("1000"),
+  //       mockedPrizePool.address,
+  //       mockedTicket.address
+  //     )
+  //     .returns();
 
-      // Reset Token connect to Owner
-      testing.token = testing.token.connect(testing.owner);
-    });
+  //   await pod.batch();
 
-    // Pod - Deposit Multiple Accounts | Batch
-    // ----------------------------------------------------------------
-    it("should deposit multiple accounts, run batch and burn all shares for total Pod balance", async function () {
-      await advanceTimeAndBlock(1);
+  //   // await pod.depositTo(walletAddress, utils.parseEther("1000"));
+  // });
 
-      // token.approve(pod, owner.balance)
-      await testing.token.approve(
-        testing.pod.address,
-        await testing.token.balanceOf(testing.owner.address)
-      );
+  // describe("Pod - Live Tokens", function () {
+  //   before(async () => {
+  //     TOKEN_FACTORY = await ethers.getContractFactory("Token");
 
-      // ----------------------------------
-      // depositTo for Multuple Accounts
-      // ----------------------------------
-      // pod.depositTo(owner, 2000 tokens)
-      testing.pod = testing.pod.connect(testing.owner);
+  //     erc20Token = await TOKEN_FACTORY.deploy();
 
-      // pod.depositTo(alice, 2000 tokens)
-      await testing.pod.depositTo(
-        testing.alice.address,
-        utils.parseEther("1000")
-      );
-
-      // pod.depositTo(bob, 2000 tokens)
-      await testing.pod.depositTo(testing.bob.address, utils.parseEther("500"));
-
-      // ----------------------------------
-      // Check Pod State
-      // ----------------------------------
-      const podTokens = await testing.pod.vaultTokenBalance();
-      const podTickets = await testing.pod.vaultTicketBalance();
-      const totalSupply = await testing.pod.totalSupply();
-
-      // Pod Ticket == Total Supply
-      expect(podTokens).to.equal(totalSupply);
-
-      // Pod Ticket == Total Supply
-      expect(podTickets).to.equal(utils.parseEther("0"));
-
-      // Pod Ticket == Total Supply
-      expect(totalSupply).to.equal(utils.parseEther("1500"));
-
-      // pod.balanceOf(alice) == 1000
-      expect(await testing.pod.balanceOf(testing.alice.address)).to.equal(
-        utils.parseEther("1000")
-      );
-
-      // pod.balanceOf(bob) == 500
-      expect(await testing.pod.balanceOf(testing.bob.address)).to.equal(
-        utils.parseEther("500")
-      );
-
-      // ----------------------------------
-      // Convert token float to tickets
-      // ----------------------------------
-      // pod.batch()
-      await testing.pod.batch(
-        await testing.token.balanceOf(testing.pod.address)
-      );
-
-      // ----------------------------------
-      // Alice
-      // ----------------------------------
-
-      // Control Next Time/Block Increase
-      await advanceTimeAndBlock(1);
-
-      // pod.withdraw(2000 ppToken) - convert shares to token
-      testing.pod = testing.pod.connect(testing.alice);
-
-      const getEarlyExitFeeAlice = await testing.pod.callStatic.getEarlyExitFee(
-        utils.parseEther("1000")
-      );
-
-      await testing.pod.withdraw(
-        utils.parseEther("1000"),
-        getEarlyExitFeeAlice
-      );
-
-      expect(await testing.token.balanceOf(testing.alice.address)).to.equalish(
-        utils.parseEther("990"),
-        utils.parseEther("2")
-      );
-
-      // expect shares after withdraw to equal 0
-      expect(await testing.pod.balanceOf(testing.alice.address)).to.equal(
-        utils.parseEther("0")
-      );
-
-      // ----------------------------------
-      // Bob
-      // ----------------------------------
-
-      // Control Next Time/Block Increase
-      await advanceTimeAndBlock(1);
-
-      // pod.withdraw(500 ppToken) - convert shares to token
-      testing.pod = testing.pod.connect(testing.bob);
-
-      const getEarlyExitFeeBob = await testing.pod.callStatic.getEarlyExitFee(
-        utils.parseEther("500")
-      );
-
-      await testing.pod.withdraw(utils.parseEther("500"), getEarlyExitFeeBob);
-
-      expect(await testing.token.balanceOf(testing.bob.address)).to.equalish(
-        utils.parseEther("495"),
-        utils.parseEther("2")
-      );
-
-      // expect shares after withdraw to equal 0
-      expect(await testing.pod.balanceOf(testing.bob.address)).to.equal(
-        utils.parseEther("0")
-      );
-    });
-  });
+  //     console.log(erc20Token, "erc20Tokenerc20Token");
+  //   });
+  // });
 });

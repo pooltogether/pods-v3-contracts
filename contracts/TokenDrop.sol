@@ -149,9 +149,12 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
      * @param user User account
      */
     function claim(address user) external returns (uint256) {
-        _captureNewTokensForUser(user);
-        uint256 balance = userStates[user].balance;
-        userStates[user].balance = 0;
+        UserState memory userState = _computeNewTokensForUser(user);
+
+        uint256 balance = userState.balance;
+        userState.balance = 0;
+        userStates[user] = userState;
+
         totalUnclaimed = uint256(totalUnclaimed).sub(balance).toUint112();
 
         // Internal _nonReentrantTransfer
@@ -222,11 +225,31 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
      * @param user The user to capture tokens for
      * @return The number of new tokens
      */
-    function _captureNewTokensForUser(address user) private returns (uint128) {
-        UserState storage userState = userStates[user];
+    function _captureNewTokensForUser(address user)
+        private
+        returns (UserState memory)
+    {
+        UserState memory userState = _computeNewTokensForUser(user);
+
+        userStates[user] = userState;
+
+        return userState;
+    }
+
+    /**
+     * @notice Captures new tokens for a user
+     * @dev This must be called before changes to the user's balance (i.e. before mint, transfer or burns)
+     * @param user The user to capture tokens for
+     * @return The number of new tokens
+     */
+    function _computeNewTokensForUser(address user)
+        private
+        returns (UserState memory)
+    {
+        UserState memory userState = userStates[user];
         if (exchangeRateMantissa == userState.lastExchangeRateMantissa) {
             // ignore if exchange rate is same
-            return 0;
+            return userState;
         }
         uint256 deltaExchangeRateMantissa =
             uint256(exchangeRateMantissa).sub(
@@ -241,11 +264,11 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
             )
                 .toUint128();
 
-        userStates[user] = UserState({
+        userState = UserState({
             lastExchangeRateMantissa: exchangeRateMantissa,
             balance: userState.balance.add(newTokens).toUint128()
         });
 
-        return newTokens;
+        return userState;
     }
 }

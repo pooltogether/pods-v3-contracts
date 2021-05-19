@@ -25,6 +25,10 @@ const setupSigners = async (testing) => {
   testing.alice = testing.signers[1];
   testing.bob = testing.signers[2];
   testing.carl = testing.signers[3];
+  testing.wallet = testing.signers[0];
+  testing.wallet2 = testing.signers[1];
+  testing.wallet3 = testing.signers[2];
+  testing.wallet4 = testing.signers[3];
 
   return testing;
 };
@@ -38,7 +42,7 @@ const createPeripheryContract = async (testing, addresses) => {
   // Set Ticket
   testing.ticket = await ethers.getContractAt(
     "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
-    config.podDAI.ticket
+    addresses.ticket
   );
 
     // Set Pool
@@ -73,36 +77,27 @@ const createPodAndTokenDrop = async (testing, config) => {
 
   // CallStatic Create Pod/TokenDrop using PodFactory Smart Contract
   testing.podAddress = await testing.podFactory.callStatic.create(
-    config.podDAI.prizePool,
-    config.podDAI.ticket,
-    config.podDAI.faucet,
+    config.prizePool,
+    config.ticket,
+    config.faucet,
     testing.podManager.address,
     18
   );
 
   // Create Pod/TokenDrop using PodFactory Smart Contract
   testing.pod_and_tokendrop_create = await testing.podFactory.create(
-    config.podDAI.prizePool,
-    config.podDAI.ticket,
-    config.podDAI.faucet,
+    config.prizePool,
+    config.ticket,
+    config.faucet,
     testing.podManager.address,
     18
   );
 
-  testing.pod = await ethers.getContractAt(
-    "Pod",
-    testing.podAddress
-  );
-
-  const tokenDropAddress = await testing.pod.tokenDrop()
-
-  testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDropAddress);
-
-  return [testing.podAddress, tokenDropAddress];
+  // const tokenDropAddress = await testing.pod.tokenDrop()
+  return [testing.podAddress];
 };
 
 const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
-  // console.log(testing, config, "testing, config");
 
   // Contract Factories
   testing.POD_FACTORY = await ethers.getContractFactory("PodFactory");

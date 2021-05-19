@@ -6,25 +6,29 @@ require("hardhat-log-remover");
 require("hardhat-deploy");
 require("hardhat-deploy-ethers");
 require("hardhat-dependency-compiler");
-const networks = require("./hardhat.networks");
+require("hardhat-gas-reporter");
+require("@nomiclabs/hardhat-etherscan");
 
-// Tasks
+// Setup Hardhat Tasks
 require("./hardhat/hardhat.development");
 require("./hardhat/hardhat.uniswap");
 
+// Import Network Configuration
+const networks = require("./hardhat.networks");
+
 // Hardhat Configuration
 module.exports = {
-  defaultNetwork: "localhost",
+  defaultNetwork: "hardhat",
+  // defaultNetwork: "localhost",
   networks,
   namedAccounts: {
     deployer: {
       default: 0,
-      testing: process.env.TESTING_DEPLOYER_ACCOUNT,
-    },
-    sponsor: {
-      default: 1,
     },
     user: {
+      default: 1,
+    },
+    sponsor: {
       default: 1,
     },
     prizePoolDAI: {
@@ -32,14 +36,38 @@ module.exports = {
       1: "0xEBfb47A7ad0FD6e57323C8A42B2E5A6a4F68fc1a", // mainnet
       4: "0x84ed0f89c033fe7dadfc4d5f2a516ebd9dc15644", // rinkeby
     },
+    prizePoolDAITicket: {
+      default: "0x334cBb5858417Aee161B53Ee0D5349cCF54514CF", // mainnet
+      4: "", // rinkeby
+    },
+    prizePoolDAIFaucet: {
+      default: "0xF362ce295F2A4eaE4348fFC8cDBCe8d729ccb8Eb", // mainnet
+      4: "", // rinkeby
+    },
     prizePoolUSDC: {
       default: "0xde9ec95d7708b8319ccca4b8bc92c0a3b70bf416", // mainnet
       1: "0xde9ec95d7708b8319ccca4b8bc92c0a3b70bf416", // mainnet
       4: "0xde5275536231eCa2Dd506B9ccD73C028e16a9a32", // rinkeby
     },
+    prizePoolUSDCTicket: {
+      default: "0xd81b1a8b1ad00baa2d6609e0bae28a38713872f7", // mainnet
+      4: "", // rinkeby
+    },
+    prizePoolUSDCFaucet: {
+      default: "0xbd537257fad96e977b9e545be583bbf7028f30b9", // mainnet
+      4: "", // rinkeby
+    },
     prizePoolCOMP: {
       default: "0xBC82221e131c082336cf698F0cA3EBd18aFd4ce7", // mainnet
       1: "0xBC82221e131c082336cf698F0cA3EBd18aFd4ce7", // mainnet
+      4: "", // rinkeby
+    },
+    prizePoolCOMPTicket: {
+      default: "0x27b85f596feb14e4b5faa9671720a556a7608c69", // mainnet
+      4: "", // rinkeby
+    },
+    prizePoolCOMPFaucet: {
+      default: "0x72F06a78bbAac0489067A1973B0Cef61841D58BC", // mainnet
       4: "", // rinkeby
     },
     prizePoolUNI: {
@@ -47,9 +75,25 @@ module.exports = {
       1: "0x0650d780292142835F6ac58dd8E2a336e87b4393", // mainnet
       4: "", // rinkeby
     },
+    prizePoolUNITicket: {
+      default: "0xA92a861FC11b99b24296aF880011B47F9cAFb5ab", // mainnet
+      4: "", // rinkeby
+    },
+    prizePoolUNIFaucet: {
+      default: "0xa5dddefD30e234Be2Ac6FC1a0364cFD337aa0f61", // mainnet
+      4: "", // rinkeby
+    },
     prizePoolPOOL: {
       default: "0x396b4489da692788e327E2e4b2B0459A5Ef26791", // mainnet
       1: "0x396b4489da692788e327E2e4b2B0459A5Ef26791", // mainnet
+      4: "", // rinkeby
+    },
+    prizePoolPOOLTicket: {
+      default: "0x27D22A7648e955E510a40bDb058333E9190d12D4", // mainnet
+      4: "", // rinkeby
+    },
+    prizePoolPOOLFaucet: {
+      default: "0x30430419b86e9512E6D93Fc2b0791d98DBeb637b", // mainnet
       4: "", // rinkeby
     },
     prizePoolBAT: {
@@ -107,6 +151,9 @@ module.exports = {
   },
   mocha: {
     timeout: 30000,
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
   dependencyCompiler: {
     paths: [

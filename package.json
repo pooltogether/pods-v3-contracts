@@ -24,11 +24,13 @@
   "license": "ISC",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-etherscan": "^2.1.2",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@pooltogether/pooltogether-contracts": "^3.3.8",
     "chai": "^4.2.0",
     "chalk": "4.0.0",
     "dotenv": "^8.2.0",
+    "eth-gas-reporter": "^0.2.22",
     "ethereum-waffle": "^3.1.2",
     "ethers": "5.0.30",
     "hardhat": "2.0.11",
@@ -44,6 +46,7 @@
     "@pooltogether/fixed-point": "^1.0.0",
     "hardhat-dependency-compiler": "^1.1.1",
     "hardhat-deploy-ethers": "^0.3.0-beta.7",
+    "hardhat-gas-reporter": "^1.0.4",
     "lowdb": "^1.0.0",
     "solhint": "3.0.0"
   }

@@ -1,5 +1,5 @@
 module.exports = {
-  // mocha: { reporter: "mocha-junit-reporter" },
+  mocha: { reporter: "mocha-junit-reporter" },
   // measureFunctionCoverage: false,
   // measureStatementCoverage: false,
   skipFiles: [
@@ -11,7 +11,7 @@ module.exports = {
     "PodManager.sol",
   ],
   mocha: {
-    grep: "@skip-on-coverage", // Find everything with this tag
-    invert: true, // Run the grep's inverse set.
+    // grep: "@skip-on-coverage", // Find everything with this tag
+    // invert: true, // Run the grep's inverse set.
   },
 };

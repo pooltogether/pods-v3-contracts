@@ -624,7 +624,7 @@ contract Pod is
         if (totalSupply() > 0) {
             return balance().mul(1e18).div(totalSupply());
         } else {
-            return 0;
+            return 1e18;
         }
     }
 
@@ -639,7 +639,11 @@ contract Pod is
         view
         returns (uint256 amount)
     {
-        return (balance().mul(shares)).div(totalSupply());
+        if (totalSupply() > 0) {
+            return (balance().mul(shares)).div(totalSupply());
+        } else {
+            return 0;
+        }
     }
 
     /**

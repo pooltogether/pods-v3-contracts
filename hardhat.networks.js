@@ -9,68 +9,70 @@ const networks = {
     blockGasLimit: 200000000,
     allowUnlimitedContractSize: true,
   },
-  development: {
-    url: `http://localhost:8543`,
-    gasPrice: 150000000000,
-    accounts: {
-      mnemonic: process.env.MNEMONIC,
-    },
-    contracts: {},
-  },
+
   hardhat: {
     chainId: 1337,
     allowUnlimitedContractSize: true,
     hardfork: "istanbul",
     accounts: {
-      mnemonic: process.env.MNEMONIC,
+      mnemonic: process.env.MNEMONIC_TESTNET,
     },
     forking: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
       blockNumber: 11905343,
     },
   },
+};
 
-  rinkeby: {
-    url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+// networks.hardhat = {
+//   chainId: 1,
+//   accounts: {
+//     mnemonic: process.env.HDWALLET_MNEMONIC,
+//   },
+//   forking: {
+//     url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+//   },
+// };
+
+// if (process.env.ALCHEMY_API_KEY && process.env.FORK_ENABLED) {
+// } else {
+//   networks.hardhat = {
+//     allowUnlimitedContractSize: true,
+//   };
+// }
+
+/* --- Hardhat Node Configuration --- */
+
+/* --- Testnet(s) Configuration --- */
+if (process.env.INFURA_API_KEY && process.env.MNEMONIC_TESTNET) {
+  networks.kovan = {
+    url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
     accounts: {
-      mnemonic: process.env.MNEMONIC,
+      mnemonic: process.env.MNEMONIC_TESTNET,
     },
-    podDAI: {
-      prizePool: "0x84ed0f89c033fe7dadfc4d5f2a516ebd9dc15644",
-      token: "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea",
-      ticket: "0xaa826545db0e04da9bb5542692eb31b439ba7175",
-      faucet: "0x699995E4b039713b3824d039CcdFCa154D9aBD4c",
-    },
-    podUSDC: {
-      prizePool: "0xde5275536231eCa2Dd506B9ccD73C028e16a9a32",
-      token: "0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b",
-      ticket: "0xb03DC163f2BECDd6Fa3f44deF57e28F1Ba95F741",
-      faucet: "0xeAbd4780f4e8508F7df5A736Bc1AE2bD74523acB",
-    },
-    podBAT: {
-      prizePool: "0xab068F220E10eEd899b54F1113dE7E354c9A8eB7",
-      token: "0xbf7a7169562078c96f0ec1a8afd6ae50f12e5a99",
-      ticket: "0xd5eE7cD7A97ccBbf2B1Fb2c92C19515a41720eA5",
-      faucet: "0x97B99693613aaA74A3fa0B2f05378b8F6A74a893",
-    },
-    podUSDT: {
-      prizePool: "0xDCB24C5C96D3D0677add5B688DCD144601410244",
-      token: "0xd9ba894e0097f8cc2bbc9d24d308b98e36dc6d02",
-      ticket: "0xeC9c462378Ce6a5f387AB81cd775226a9fd960e9",
-      faucet: "",
-    },
-  },
+  };
 
-  // MAINNET CONFIGURATION
-  mainnet: {
-    url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
-    gasPrice: 1000000000,
+  networks.ropsten = {
+    url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
     accounts: {
-      mnemonic: process.env.MNEMONIC,
+      mnemonic: process.env.MNEMONIC_TESTNET,
     },
+  };
 
-    deployed: {},
-    owner: "0xC14438f1E3afF20a8e9b41a60F29a3ADFEf16B10",
+  networks.rinkeby = {
+    url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+    accounts: {
+      mnemonic: process.env.MNEMONIC_TESTNET,
+    },
+  };
+} else {
+  console.warn("No Infura and/or HDwallet available for Ethereum testnets");
+}
+
+/* --- Mainnet Configuration --- */
+if (process.env.ALCHEMY_API_KEY) {
+  networks.mainnet = {
+    url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
     podDAI: {
       prizePool: "0xEBfb47A7ad0FD6e57323C8A42B2E5A6a4F68fc1a",
       token: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
@@ -111,7 +113,16 @@ const networks = {
       WETH: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       POOL: "0x0cEC1A9154Ff802e7934Fc916Ed7Ca50bDE6844e",
     },
-  },
-};
+  };
+  if (process.env.MNEMONIC_MAINNET && process.env.MAINNET_DEPLOY) {
+    networks.mainnet = {
+      accounts: {
+        mnemonic: process.env.MNEMONIC_MAINNET,
+      },
+    };
+  }
+} else {
+  console.warn("No Alchemy endpoint available for Ethereum mainnet");
+}
 
 module.exports = networks;
