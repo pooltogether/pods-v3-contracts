@@ -121,7 +121,7 @@ contract Pod is
     modifier onlyOwnerOrManager() {
         address _sender = _msgSender();
         require(
-            manager == _sender || _owner == _sender,
+            manager == _sender || owner() == _sender,
             "Pod:manager-unauthorized"
         );
         _;
