@@ -32,6 +32,11 @@ contract PodManager is OwnableUpgradeable, IPodManager {
     IUniswapV2Router02 public uniswapRouter =
         IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
+    constructor() {
+        // Initialize Owner
+        __Ownable_init_unchained();
+    }
+
     /***********************************|
     |   Events                          |
     |__________________________________*/
