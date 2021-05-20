@@ -14,6 +14,7 @@ const {
 } = require("./utilities/contracts");
 
 const { ethers } = hardhat
+const { constants } = ethers
 
 describe("Pod - Fork", function () {
   let testing = {};
@@ -140,6 +141,20 @@ describe("Pod - Fork", function () {
       utils.parseEther("1000"),
       getEarlyExitFee
     );
+  });
+
+  it("should run depositTo and drop with token drop unset", async function () {
+    await testing.token.approve(testing.pod.address, utils.parseEther("1000"));
+    await testing.pod.depositTo(
+      testing.owner.address,
+      utils.parseEther("1000")
+    );
+    
+    await testing.pod.setTokenDrop(
+      constants.AddressZero
+    );
+
+    await testing.pod.drop();
   });
 
   it("should run depositTo, drop and withdraw", async function () {

@@ -11,7 +11,7 @@ const {
 } = require("./utilities/contracts");
 
 const { ethers } = hardhat
-const { utils } = ethers
+const { utils, constants } = ethers
 
 describe("PodManager - Fork", function() {
   let testing = {};
@@ -31,6 +31,17 @@ describe("PodManager - Fork", function() {
       "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
       USDC
     );
+
+    await purchaseToken(
+      "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH
+      '0x0cEC1A9154Ff802e7934Fc916Ed7Ca50bDE6844e', // POOL
+      ethers.utils.parseEther("5"),
+      testing.owner.address,
+      {
+        UniswapRouter: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+        exactAmount: true,
+      }
+    );
   });
 
   beforeEach(async () => {
@@ -42,6 +53,39 @@ describe("PodManager - Fork", function() {
     );
 
     await testing.pod.setManager(testing.podManager.address);
+  });
+
+  it("should fail transfering pod token via withdrawERC20 ", async function() {
+    const token = await testing.pod.token()
+    const withdrawERC20 = testing.pod.withdrawERC20(token, utils.parseEther('1000'));
+    expect(withdrawERC20)
+      .to.be.revertedWith("Pod:invalid-target-token");
+  });
+  
+  it("should fail transfering pod ticket via withdrawERC20 ", async function() {
+    const ticket = await testing.pod.ticket()
+    const withdrawERC20 = testing.pod.withdrawERC20(ticket, utils.parseEther('1000'));
+    expect(withdrawERC20)
+      .to.be.revertedWith("Pod:invalid-target-token");
+  });
+  
+  it("should fail transfering pod token drop asset via withdrawERC20 ", async function() {
+    const asset = await testing.tokenDrop.asset()
+    const withdrawERC20 = testing.pod.withdrawERC20(asset, utils.parseEther('1000'));
+    expect(withdrawERC20)
+      .to.be.revertedWith("Pod:invalid-target-token");
+  });
+  
+  it("should succeed transfering pod token drop asset via withdrawERC20 after ", async function() {
+    await testing.reward.transfer(testing.pod.address, utils.parseEther('10'))
+
+    await testing.pod.setTokenDrop(constants.AddressZero)
+    const asset = await testing.tokenDrop.asset()
+    const withdrawERC20 = testing.pod.withdrawERC20(asset, utils.parseEther('10'));
+
+    await expect(withdrawERC20)
+      .to.emit(testing.pod, "ERC20Withdrawn")
+      .withArgs(asset, utils.parseEther('10'));
   });
 
   /************************************|
