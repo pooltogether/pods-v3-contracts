@@ -392,12 +392,6 @@ contract Pod is
         onlyOwner
         returns (bool)
     {
-        // TokenDrop must be a valid smart contract
-        require(
-            address(_tokenDrop) != address(0),
-            "Pod:invalid-token-drop-contract"
-        );
-
         // Set TokenDrop smart contract instance
         tokenDrop = _tokenDrop;
 
@@ -424,9 +418,8 @@ contract Pod is
         require(
             address(_target) != address(token) &&
                 address(_target) != address(ticket) &&
-                address(tokenDrop) != address(0)
-                ? address(_target) != address(tokenDrop.asset())
-                : true,
+                (address(tokenDrop) == address(0) ||
+                    address(_target) != address(tokenDrop.asset())),
             "Pod:invalid-target-token"
         );
 
