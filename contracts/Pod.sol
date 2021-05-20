@@ -484,12 +484,13 @@ contract Pod is
      */
     function _calculateAllocation(uint256 amount) internal returns (uint256) {
         uint256 allocation = 0;
+        uint256 _totalSupply = totalSupply();
 
         // Calculate Allocation
-        if (totalSupply() == 0) {
+        if (_totalSupply == 0) {
             allocation = amount;
         } else {
-            allocation = (amount.mul(totalSupply())).div(balance());
+            allocation = (amount.mul(_totalSupply)).div(balance());
         }
 
         // Return Allocation Amount
