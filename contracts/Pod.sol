@@ -506,7 +506,7 @@ contract Pod is
         internal
         returns (uint256)
     {
-        // Calculate Percentage Returned from Burned Shares
+        // Calculate shares underlying tokens
         uint256 amount = _calculateUnderlyingTokens(shares);
 
         // Burn Shares
