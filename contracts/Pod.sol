@@ -244,7 +244,7 @@ contract Pod is
     /**
      * @notice Withdraws a users share of the prize pool.
      * @dev The function should first withdraw from the 'float'; i.e. the funds that have not yet been deposited.
-     * @param shareAmount The number of Pod shares to redeem.
+     * @param shareAmount The number of Pod shares to burn.
      * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return The actual amount of tokens that were transferred to the user.  This is the same as the deposit token.
      */
@@ -484,12 +484,13 @@ contract Pod is
      */
     function _calculateAllocation(uint256 amount) internal returns (uint256) {
         uint256 allocation = 0;
+        uint256 _totalSupply = totalSupply();
 
         // Calculate Allocation
-        if (totalSupply() == 0) {
+        if (_totalSupply == 0) {
             allocation = amount;
         } else {
-            allocation = (amount.mul(totalSupply())).div(balance());
+            allocation = (amount.mul(_totalSupply)).div(balance());
         }
 
         // Return Allocation Amount
@@ -498,7 +499,7 @@ contract Pod is
 
     /**
      * @dev The internal function for the public withdraw function, which calculates a user's token allocation from burned shares.
-     * @param shares Amount of "token" deposited into the Pod.
+     * @param share The number of Pod shares to burn.
      * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return uint256 The token amount returned for the burned shares.
      */
@@ -506,8 +507,8 @@ contract Pod is
         internal
         returns (uint256)
     {
-        // Calculate Percentage Returned from Burned Shares
-        uint256 amount = (balance().mul(shares)).div(totalSupply());
+        // Calculate shares underlying tokens
+        uint256 amount = _calculateUnderlyingTokens(shares);
 
         // Burn Shares
         _burn(msg.sender, shares);
@@ -582,6 +583,25 @@ contract Pod is
         return ticket.balanceOf(address(this));
     }
 
+    /**
+     * @notice Calculate underlying tokens via shares input.
+     * @dev Using shares as input calculate the underlying tokens
+     * @return Underlying tokens
+     */
+    function _calculateUnderlyingTokens(uint256 _shares)
+        internal
+        view
+        returns (uint256)
+    {
+        // Check totalSupply to prevent SafeMath: division by zero
+        uint256 _totalSupply = totalSupply();
+        if (_totalSupply > 0) {
+            return balance().mul(_shares).div(_totalSupply);
+        } else {
+            return _shares;
+        }
+    }
+
     /***********************************|
     |  Views                            |
     |__________________________________*/
@@ -623,26 +643,22 @@ contract Pod is
      * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
      */
     function getPricePerShare() external view override returns (uint256) {
-        // Check totalSupply to prevent SafeMath: division by zero
-        if (totalSupply() > 0) {
-            return balance().mul(1e18).div(totalSupply());
-        } else {
-            return 0;
-        }
+        uint256 _decimals = decimals();
+        return _calculateUnderlyingTokens(10**_decimals);
     }
 
     /**
-     * @notice Calculate the underlying assets relative to share input.
+     * @notice Calculate the underlying assets relative to users balance.
      * @dev Converts share amount to asset amount by checking the Pod's token and ticket balance.
-     * @param shares Amount of shares representing underlying assets.
+     * @param user User account
      * @return amount Total assets relative to share input.
      */
-    function balanceOfUnderlying(uint256 shares)
+    function balanceOfUnderlying(address user)
         external
         view
         returns (uint256 amount)
     {
-        return (balance().mul(shares)).div(totalSupply());
+        return _calculateUnderlyingTokens(balanceOf(user));
     }
 
     /**
