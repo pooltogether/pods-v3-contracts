@@ -507,7 +507,7 @@ contract Pod is
         returns (uint256)
     {
         // Calculate Percentage Returned from Burned Shares
-        uint256 amount = (balance().mul(shares)).div(totalSupply());
+        uint256 amount = _calculateUnderlyingTokens(shares);
 
         // Burn Shares
         _burn(msg.sender, shares);
@@ -582,6 +582,24 @@ contract Pod is
         return ticket.balanceOf(address(this));
     }
 
+    /**
+     * @notice Calculate underlying tokens via shares input.
+     * @dev Using shares as input calculate the underlying tokens
+     * @return Underlying tokens
+     */
+    function _calculateUnderlyingTokens(uint256 _shares)
+        internal
+        view
+        returns (uint256)
+    {
+        // Check totalSupply to prevent SafeMath: division by zero
+        if (totalSupply() > 0) {
+            return balance().mul(_shares).div(totalSupply());
+        } else {
+            return 0;
+        }
+    }
+
     /***********************************|
     |  Views                            |
     |__________________________________*/
@@ -623,26 +641,32 @@ contract Pod is
      * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
      */
     function getPricePerShare() external view override returns (uint256) {
-        // Check totalSupply to prevent SafeMath: division by zero
-        if (totalSupply() > 0) {
-            return balance().mul(1e18).div(totalSupply());
+        uint256 _underlying = _calculateUnderlyingTokens(1e18);
+        if (_underlying > 0) {
+            return _underlying;
         } else {
-            return 0;
+            uint256 _decimals = decimals();
+            return 10**_decimals;
         }
     }
 
     /**
-     * @notice Calculate the underlying assets relative to share input.
+     * @notice Calculate the underlying assets relative to users balance.
      * @dev Converts share amount to asset amount by checking the Pod's token and ticket balance.
-     * @param shares Amount of shares representing underlying assets.
+     * @param user User account
      * @return amount Total assets relative to share input.
      */
-    function balanceOfUnderlying(uint256 shares)
+    function balanceOfUnderlying(address user)
         external
         view
         returns (uint256 amount)
     {
-        return (balance().mul(shares)).div(totalSupply());
+        uint256 _balanceOfUser = balanceOf(user);
+        if (_balanceOfUser > 0) {
+            return (balance().mul(_balanceOfUser)).div(totalSupply());
+        } else {
+            return 0;
+        }
     }
 
     /**
