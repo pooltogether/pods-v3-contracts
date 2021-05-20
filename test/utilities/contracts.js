@@ -25,34 +25,39 @@ const setupSigners = async (testing) => {
   testing.alice = testing.signers[1];
   testing.bob = testing.signers[2];
   testing.carl = testing.signers[3];
+  testing.wallet = testing.signers[0];
+  testing.wallet2 = testing.signers[1];
+  testing.wallet3 = testing.signers[2];
+  testing.wallet4 = testing.signers[3];
 
   return testing;
 };
 
-const createPeripheryContract = async (testing, config) => {
+const createPeripheryContract = async (testing, addresses) => {
   // Set Token
   testing.token = await ethers.getContractAt(
     "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
-    config.podDAI.token
+    addresses.token
+  );
+  // Set Ticket
+  testing.ticket = await ethers.getContractAt(
+    "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
+    addresses.ticket
   );
 
   // Set Pool
   testing.pool = await ethers.getContractAt(
     "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
-    config.tokens.POOL
+    addresses.reward
   );
 
-  // Set Ticket
-  testing.ticket = await ethers.getContractAt(
-    "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
-    config.podDAI.ticket
-  );
+  testing.reward = testing.pool
+
 
   return testing;
 };
 
 const createPodAndTokenDrop = async (testing, config) => {
-  // console.log(testing, config, "testing, config");
 
   // Contract Factories
   testing.POD_FACTORY = await ethers.getContractFactory("PodFactory");
@@ -73,40 +78,28 @@ const createPodAndTokenDrop = async (testing, config) => {
   );
 
   // CallStatic Create Pod/TokenDrop using PodFactory Smart Contract
-  testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
-    config.podDAI.prizePool,
-    config.podDAI.ticket,
-    config.podDAI.faucet,
+  testing.podAddress = await testing.podFactory.callStatic.create(
+    config.prizePool,
+    config.ticket,
+    config.faucet,
     testing.podManager.address,
     18
   );
 
   // Create Pod/TokenDrop using PodFactory Smart Contract
   testing.pod_and_tokendrop_create = await testing.podFactory.create(
-    config.podDAI.prizePool,
-    config.podDAI.ticket,
-    config.podDAI.faucet,
+    config.prizePool,
+    config.ticket,
+    config.faucet,
     testing.podManager.address,
     18
   );
 
-  testing.pod = await ethers.getContractAt(
-    "Pod",
-    testing.pod_and_tokendrop_static[0]
-  );
-
-  testing.tokenDrop = await ethers.getContractAt(
-    "TokenDrop",
-    testing.pod_and_tokendrop_static[1]
-  );
-
-  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.tokenDrop());
-
-  return testing.pod_and_tokendrop_static;
+  // const tokenDropAddress = await testing.pod.tokenDrop()
+  return [testing.podAddress];
 };
 
 const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
-  // console.log(testing, config, "testing, config");
 
   // Contract Factories
   testing.POD_FACTORY = await ethers.getContractFactory("PodFactory");
@@ -127,7 +120,7 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
   );
 
   // CallStatic Create Pod/TokenDrop using PodFactory Smart Contract
-  testing.pod_and_tokendrop_static = await testing.podFactory.callStatic.create(
+  testing.podAddress = await testing.podFactory.callStatic.create(
     config.prizePool,
     config.ticket,
     config.faucet,
@@ -146,17 +139,14 @@ const createPodAndTokenDropFromStaticVariables = async (testing, config) => {
 
   testing.pod = await ethers.getContractAt(
     "Pod",
-    testing.pod_and_tokendrop_static[0]
+    testing.podAddress
   );
 
-  testing.tokenDrop = await ethers.getContractAt(
-    "TokenDrop",
-    testing.pod_and_tokendrop_static[1]
-  );
+  const tokenDropAddress = await testing.pod.tokenDrop()
 
-  testing.drop = await ethers.getContractAt("TokenDrop", testing.pod.tokenDrop());
+  testing.tokenDrop = await ethers.getContractAt("TokenDrop", tokenDropAddress);
 
-  return testing.pod_and_tokendrop_static;
+  return [testing.podAddress, tokenDropAddress];
 };
 
 module.exports = {
