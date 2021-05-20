@@ -10,6 +10,8 @@ interface TokenFaucet {
 
     function exchangeRateMantissa() external returns (uint112);
 
+    function measure() external returns (address);
+
     function totalUnclaimed() external returns (uint112);
 
     function lastDripTimestamp() external returns (uint32);

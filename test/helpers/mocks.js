@@ -70,9 +70,7 @@ async function mockSafeERC20(wallet) {
  * @param {Object} wallet 
  */
  async function mockTokenFaucetInitializeBasics(mockedContract, configuraton) {
-
-  await mockedContract.mock.asset.returns(configuraton.asset)
- 
+  await mockedContract.mock.asset.returns(configuraton.asset) 
   await mockedContract.mock.measure.returns(configuraton.asset)
 
   return mockedContract
