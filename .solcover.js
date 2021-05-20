@@ -1,17 +1,11 @@
 module.exports = {
-  // mocha: { reporter: "mocha-junit-reporter" },
-  // measureFunctionCoverage: false,
-  // measureStatementCoverage: false,
+  mocha: { reporter: "mocha-junit-reporter" },
   skipFiles: [
     "external",
     "mocks",
     "test",
-    "libraries/FixedPoint.sol",
-    "libraries/ExtendedSafeCast.sol",
+    "interfaces",
+    "libraries",
     "PodManager.sol",
   ],
-  mocha: {
-    grep: "@skip-on-coverage", // Find everything with this tag
-    invert: true, // Run the grep's inverse set.
-  },
 };
