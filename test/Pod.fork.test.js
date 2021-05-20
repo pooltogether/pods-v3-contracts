@@ -68,15 +68,6 @@ describe("Pod - Fork", function () {
     );
   });
 
-  it("should fail when account is withdrawing with 0 shares", async function () {
-    const getEarlyExitFee = await testing.pod.callStatic.getEarlyExitFee(
-      utils.parseEther("0")
-    );
-
-    await expect(
-      testing.pod.withdraw(utils.parseEther("0"), getEarlyExitFee)
-    ).to.be.revertedWith("SafeMath: division by zero");
-  });
 
   it("should fail when account is withdrawing with excessive shares", async function () {
     await testing.token.approve(testing.pod.address, utils.parseEther("1000"));

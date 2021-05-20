@@ -14,7 +14,7 @@ const {
   mockPrizeStrategy,
 } = require("./helpers/mocks");
 
-describe("Pod (18 Decimals) - Mock", function () {
+describe("Pod (6 Decimals) - Mock", function () {
   let wallet;
   let walletAddress;
   let pod, tokenDrop;
@@ -42,10 +42,12 @@ describe("Pod (18 Decimals) - Mock", function () {
     mockedToken = await mockERC20InitializeBasics(await mockERC20(wallet), {
       name: "Token Test",
       symbol: "TEST",
+      decimals: 6,
     });
     mockedTicket = await mockERC20InitializeBasics(await mockERC20(wallet), {
       name: "Token Ticket",
       symbol: "TICKET",
+      decimals: 6,
     });
     mockedReward = await mockERC20InitializeBasics(await mockERC20(wallet), {
       name: "Token Reward",
@@ -92,7 +94,7 @@ describe("Pod (18 Decimals) - Mock", function () {
       mockedTicket.address,
       mockedTokenFaucet.address,
       walletAddress,
-      18
+      6
     );
 
     // Create Pod
@@ -101,13 +103,21 @@ describe("Pod (18 Decimals) - Mock", function () {
       mockedTicket.address,
       mockedTokenFaucet.address,
       walletAddress,
-      18
+      6
     );
 
     pod = await ethers.getContractAt("Pod", podAddress);
     tokenDrop = await ethers.getContractAt("TokenDrop", await pod.tokenDrop());
   });
 
+  it("should have matching decimals for token, ticket and pod", async function () {
+
+    const tName = await mockedToken.name();
+
+    // Pod Name
+    const name = await pod.name();
+    expect(name).equal(`Pod ${tName}`);
+  });
   it("should have the correct name", async function () {
     const tName = await mockedToken.name();
 
@@ -152,15 +162,15 @@ describe("Pod (18 Decimals) - Mock", function () {
 
   it("should have 1 as default for price per share", async function () {
     const getPricePerShare = await pod.getPricePerShare();
-    expect(getPricePerShare).equal(utils.parseEther("1"));
+    expect(getPricePerShare).equal(utils.parseUnits("1", 6));
   });
 
   it("should have 2 as default for price per share", async function () {
     await mockedToken.mock.transferFrom
-      .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+      .withArgs(walletAddress, pod.address, utils.parseUnits("1000", 6))
       .returns(true);
 
-    await pod.depositTo(walletAddress, utils.parseEther("1000"));
+    await pod.depositTo(walletAddress, utils.parseUnits("1000", 6));
 
     await mockedToken.mock.balanceOf
       .withArgs(pod.address)
@@ -180,20 +190,20 @@ describe("Pod (18 Decimals) - Mock", function () {
 
   it("the share amount should match the underlying balance", async function () {
     await mockedToken.mock.transferFrom
-      .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+      .withArgs(walletAddress, pod.address, utils.parseUnits("1000", 6))
       .returns(true);
 
-    await pod.depositTo(walletAddress, utils.parseEther("1000"));
+    await pod.depositTo(walletAddress, utils.parseUnits("1000", 6));
 
     await mockedToken.mock.balanceOf
       .withArgs(pod.address)
-      .returns(utils.parseEther("1000"));
+      .returns(utils.parseUnits("1000", 6));
     await mockedTicket.mock.balanceOf
       .withArgs(pod.address)
       .returns(utils.parseEther("0"));
 
     const balanceOfUnderlying = await pod.balanceOfUnderlying(walletAddress);
-    expect(balanceOfUnderlying).equal(utils.parseEther("1000"));
+    expect(balanceOfUnderlying).equal(utils.parseUnits("1000", 6));
   });
 
   it("pod should revert when depositing 0 tokens", async function () {
@@ -204,13 +214,13 @@ describe("Pod (18 Decimals) - Mock", function () {
 
   it("should succeed when depositing above 0", async function () {
     await mockedToken.mock.transferFrom
-      .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+      .withArgs(walletAddress, pod.address, utils.parseUnits("1000", 6))
       .returns(true);
 
     // depositTo()
     const depositTo = await pod.depositTo(
       walletAddress,
-      utils.parseEther("1000")
+      utils.parseUnits("1000", 6)
     );
 
     // getTransactionReceipt(depositTo.hash)
@@ -223,35 +233,35 @@ describe("Pod (18 Decimals) - Mock", function () {
 
   it("should succeed when multiple accounts have shares", async function () {
     await mockedToken.mock.transferFrom
-      .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+      .withArgs(walletAddress, pod.address, utils.parseUnits("1000", 6))
       .returns(true);
 
     // depositTo()
     await pod.depositTo(
       walletAddress,
-      utils.parseEther("1000")
+      utils.parseUnits("1000", 6)
     );
 
     await mockedToken.mock.balanceOf
       .withArgs(pod.address)
-      .returns(utils.parseEther("1000"));
+      .returns(utils.parseUnits("1000", 6));
     await mockedTicket.mock.balanceOf
       .withArgs(pod.address)
       .returns(utils.parseEther("0"));
 
     await mockedToken.mock.transferFrom
-      .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+      .withArgs(walletAddress, pod.address, utils.parseUnits("1000", 6))
       .returns(true);
 
     await pod.depositTo(
       wallet2.address,
-      utils.parseEther("1000")
+      utils.parseUnits("1000", 6)
     );
 
     const totalSupply = await pod.totalSupply();
       
     // Check All Events
-    expect(totalSupply).to.equal(utils.parseEther('2000'));
+    expect(totalSupply).to.equal(utils.parseUnits("2000", 6));
   });
 
   it("should have 0 balance when pod is empty", async function () {
@@ -270,10 +280,10 @@ describe("Pod (18 Decimals) - Mock", function () {
   it("should have 0 exit fee when float is sufficient", async function () {
     await mockedToken.mock.balanceOf
       .withArgs(pod.address)
-      .returns(utils.parseEther("1000"));
+      .returns(utils.parseUnits("1000", 6));
 
     const getEarlyExitFee = await pod.callStatic.getEarlyExitFee(
-      utils.parseEther("500")
+      utils.parseUnits("500", 6)
     );
 
     expect(getEarlyExitFee).equal(utils.parseEther("0"));
@@ -281,38 +291,38 @@ describe("Pod (18 Decimals) - Mock", function () {
   it("should calculate the exit fee using the prizePool when float is insufficient", async function () {
     await mockedToken.mock.balanceOf
       .withArgs(pod.address)
-      .returns(utils.parseEther("1000"));
+      .returns(utils.parseUnits("1000", 6));
 
     await mockedPrizePool.mock.calculateEarlyExitFee
-      .withArgs(pod.address, mockedTicket.address, utils.parseEther("500"))
-      .returns(utils.parseEther("5"), utils.parseEther("5"));
+      .withArgs(pod.address, mockedTicket.address, utils.parseUnits("500", 6))
+      .returns(utils.parseUnits("5", 6), utils.parseUnits("5", 6));
 
     const getEarlyExitFee = await pod.callStatic.getEarlyExitFee(
-      utils.parseEther("1500")
+      utils.parseUnits("1500", 6)
     );
 
-    expect(getEarlyExitFee).equal(utils.parseEther("5"));
+    expect(getEarlyExitFee).equal(utils.parseUnits("5", 6));
   });
 
   // it("should batch succesfully", async function () {
   //   await mockedToken.mock.transferFrom
-  //     .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+  //     .withArgs(walletAddress, pod.address, utils.parseUnits("1000", 6))
   //     .returns(true);
 
-  //   await pod.depositTo(walletAddress, utils.parseEther("1000"));
+  //   await pod.depositTo(walletAddress, utils.parseUnits("1000", 6));
 
   //   await mockedToken.mock.balanceOf
   //     .withArgs(pod.address)
-  //     .returns(utils.parseEther("1000"));
+  //     .returns(utils.parseUnits("1000", 6));
 
   //   await mockedToken.mock.approve
-  //     .withArgs(mockedPrizePool.address, utils.parseEther("1000"))
+  //     .withArgs(mockedPrizePool.address, utils.parseUnits("1000", 6))
   //     .returns(true);
 
   //   await mockedPrizePool.mock.depositTo
   //     .withArgs(
   //       mockedPrizePool.address,
-  //       utils.parseEther("1000"),
+  //       utils.parseUnits("1000", 6),
   //       mockedPrizePool.address,
   //       mockedTicket.address
   //     )
@@ -320,7 +330,7 @@ describe("Pod (18 Decimals) - Mock", function () {
 
   //   await pod.batch();
 
-  //   // await pod.depositTo(walletAddress, utils.parseEther("1000"));
+  //   // await pod.depositTo(walletAddress, utils.parseUnits("1000", 6));
   // });
 
   // describe("Pod - Live Tokens", function () {

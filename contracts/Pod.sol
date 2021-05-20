@@ -499,7 +499,7 @@ contract Pod is
 
     /**
      * @dev The internal function for the public withdraw function, which calculates a user's token allocation from burned shares.
-     * @param share The number of Pod shares to burn.
+     * @param shares The number of Pod shares to burn.
      * @param maxFee Max fee amount for withdrawl if amount isn't available in float.
      * @return uint256 The token amount returned for the burned shares.
      */
