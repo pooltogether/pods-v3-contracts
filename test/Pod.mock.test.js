@@ -14,7 +14,7 @@ const {
   mockPrizeStrategy,
 } = require("./helpers/mocks");
 
-describe("Pod - Deposit", function () {
+describe("Pod - Mock", function () {
   let wallet;
   let walletAddress;
   let pod, tokenDrop;
@@ -142,6 +142,13 @@ describe("Pod - Deposit", function () {
     const ticket = await pod.ticket();
     expect(ticket).equal(mockedTicket.address);
   });
+  
+  it("should be able to set target token approve to zero ", async function () {
+    await mockedToken.mock.approve
+      .withArgs(tokenDrop.address, utils.parseEther("0"))
+      .returns(true);
+    const ticket = await pod.emergencyTokenApproveZero(mockedToken.address, tokenDrop.address);
+  });
 
   it("should have 1 as default for price per share", async function () {
     const getPricePerShare = await pod.getPricePerShare();
@@ -212,6 +219,39 @@ describe("Pod - Deposit", function () {
     // Check All Events
     expect(pod.interface.parseLog(receipt.logs[0]).name).to.equal("Transfer");
     expect(pod.interface.parseLog(receipt.logs[1]).name).to.equal("Deposited");
+  });
+
+  it("should succeed when multiple accounts have shares", async function () {
+    await mockedToken.mock.transferFrom
+      .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+      .returns(true);
+
+    // depositTo()
+    await pod.depositTo(
+      walletAddress,
+      utils.parseEther("1000")
+    );
+
+    await mockedToken.mock.balanceOf
+      .withArgs(pod.address)
+      .returns(utils.parseEther("1000"));
+    await mockedTicket.mock.balanceOf
+      .withArgs(pod.address)
+      .returns(utils.parseEther("0"));
+
+    await mockedToken.mock.transferFrom
+      .withArgs(walletAddress, pod.address, utils.parseEther("1000"))
+      .returns(true);
+
+    await pod.depositTo(
+      wallet2.address,
+      utils.parseEther("1000")
+    );
+
+    const totalSupply = await pod.totalSupply();
+      
+    // Check All Events
+    expect(totalSupply).to.equal(utils.parseEther('2000'));
   });
 
   it("should have 0 balance when pod is empty", async function () {
