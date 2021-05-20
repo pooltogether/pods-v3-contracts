@@ -115,10 +115,15 @@ contract Pod is
     |__________________________________*/
 
     /**
-     * @dev Checks is the caller is an active PodManager
+     * @dev Checks is the caller is a manager or owner.
      */
-    modifier onlyManager() {
-        require(manager == _msgSender(), "Pod:manager-unauthorized");
+
+    modifier onlyOwnerOrManager() {
+        address _sender = _msgSender();
+        require(
+            manager == _sender || owner() == _sender,
+            "Pod:manager-unauthorized"
+        );
         _;
     }
 
@@ -307,25 +312,30 @@ contract Pod is
         // Run batch (to eliminate "sandwich" attack) and reduce Pod float to zero.
         batch();
 
-        // TokenDrop Asset
-        IERC20Upgradeable _asset = IERC20Upgradeable(tokenDrop.asset());
+        // Check TokenDrop is set for the Pod.
+        if (address(tokenDrop) != address(0)) {
+            // TokenDrop Asset
+            IERC20Upgradeable _asset = IERC20Upgradeable(tokenDrop.asset());
 
-        // Pod asset balance
-        uint256 balance = _asset.balanceOf(address(this));
+            // Pod asset balance
+            uint256 balance = _asset.balanceOf(address(this));
 
-        // Only Transfer asset to TokenDrop if balance above 0
-        if (balance > 0) {
-            // Approve TokenDrop to withdraw(transfer) reward balance
-            _asset.safeApprove(address(tokenDrop), balance);
+            // Only Transfer asset to TokenDrop if balance above 0
+            if (balance > 0) {
+                // Approve TokenDrop to withdraw(transfer) reward balance
+                _asset.safeApprove(address(tokenDrop), balance);
 
-            // Add reward token to TokenDrop balance
-            tokenDrop.addAssetToken(balance);
+                // Add reward token to TokenDrop balance
+                tokenDrop.addAssetToken(balance);
+            }
+
+            // Emit PodClaimed
+            emit PodClaimed(balance);
+
+            return balance;
+        } else {
+            return 0;
         }
-
-        // Emit PodClaimed
-        emit PodClaimed(balance);
-
-        return balance;
     }
 
     /**
@@ -362,8 +372,6 @@ contract Pod is
         onlyOwner
         returns (bool)
     {
-        require(address(_faucet) != address(0), "Pod:invalid-faucet-contract");
-
         // Set TokenFaucet
         faucet = _faucet;
 
@@ -384,12 +392,6 @@ contract Pod is
         onlyOwner
         returns (bool)
     {
-        // TokenDrop must be a valid smart contract
-        require(
-            address(_tokenDrop) != address(0),
-            "Pod:invalid-token-drop-contract"
-        );
-
         // Set TokenDrop smart contract instance
         tokenDrop = _tokenDrop;
 
@@ -400,7 +402,7 @@ contract Pod is
     }
 
     /**
-     * @notice Withdraw non-core (token/ticket/pool) ERC20 to Pod manager.
+     * @notice Withdraw non-core (token/ticket/tokenDrop.asset) ERC20 to Pod manager.
      * @dev Withdraws an ERC20 token amount from the Pod to the PodManager for liquidation to the token and back to the Pod.
      * @param _target ERC20 token to withdraw.
      * @param amount Amount of ERC20 to transfer/withdraw.
@@ -409,14 +411,15 @@ contract Pod is
     function withdrawERC20(IERC20Upgradeable _target, uint256 amount)
         external
         override
-        onlyManager
+        onlyOwnerOrManager
         returns (bool)
     {
         // Lock token/ticket/pool ERC20 transfers
         require(
             address(_target) != address(token) &&
                 address(_target) != address(ticket) &&
-                address(_target) != address(tokenDrop.asset()),
+                (address(tokenDrop) == address(0) ||
+                    address(_target) != address(tokenDrop.asset())),
             "Pod:invalid-target-token"
         );
 
@@ -441,7 +444,7 @@ contract Pod is
     function withdrawERC721(IERC721Upgradeable _target, uint256 tokenId)
         external
         override
-        onlyManager
+        onlyOwnerOrManager
         returns (bool)
     {
         // Transfer ERC721
