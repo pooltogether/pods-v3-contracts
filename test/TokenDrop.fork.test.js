@@ -5,7 +5,6 @@ const { expect } = require("chai");
 
 const { prizePoolDefault } = require("./helpers/constants");
 const { purchaseToken } = require("../lib/uniswap");
-const { getConfig } = require("../lib/config");
 const {
   setupSigners,
   createPodAndTokenDrop,
@@ -16,7 +15,6 @@ const {
 const { ethers } = hardhat
 
 describe("TokenDrop", function() {
-  const config = getConfig("mainnet");
   let testing = {};
 
   let owner

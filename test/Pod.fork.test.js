@@ -1,13 +1,10 @@
 require("./helpers/chaiMatchers");
 const hardhat = require("hardhat");
-const { ethers } = require("hardhat");
-const { expect, assert } = require("chai");
-const { constants, utils } = require("ethers");
+const { expect } = require("chai");
+const { utils } = require("ethers");
 
 const { prizePoolDefault } = require("./helpers/constants");
-const { getConfig } = require("../lib/config");
 const { purchaseToken } = require("../lib/uniswap");
-const { advanceTimeAndBlock } = require("./utilities/time");
 const { toWei } = require("./utilities/bignumbers");
 const {
   setupSigners,
@@ -16,8 +13,9 @@ const {
   createPeripheryContract,
 } = require("./utilities/contracts");
 
+const { ethers } = hardhat
+
 describe("Pod - Fork", function () {
-  const config = getConfig("mainnet");
   let testing = {};
   let wallet, wallet2, wallet3, wallet4
 

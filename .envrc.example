@@ -1,0 +1,27 @@
+# Connect to Infura API endpoint
+export INFURA_API_KEY=''
+
+# Connect to Alchemy API endpoint
+export ALCHEMY_API_KEY=''
+
+# Used for verifying contracts on Etherscan
+export ETHERSCAN_API_KEY=''
+
+export MNEMONIC=""
+
+# Deploy to Ethereum testnet(s)
+export MNEMONIC_TESTNET=""
+
+# Deploy to Ethereum mainnet
+export MNEMONIC_MAINNET=""
+
+# Enable mainnet deploys
+export MAINNET_DEPLOY=""
+
+# Enabled hardhat mainnet and set chainId
+export FORK_ENABLED_CHAINID=''
+
+# Block number from which to fork
+export FORK_BLOCK_NUMBER=''
+
+export TESTING_DEPLOYER_ACCOUNT=''

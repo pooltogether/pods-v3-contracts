@@ -1,12 +1,8 @@
-require("./helpers/chaiMatchers");
-const { utils } = require("ethers");
-const { ethers } = require("hardhat");
+const hardhat = require("hardhat");
 const { expect } = require("chai");
 
 const { prizePoolDefault } = require("./helpers/constants");
-const { getConfig } = require("../lib/config");
 const { purchaseToken } = require("../lib/uniswap");
-const { toWei } = require("./utilities/bignumbers");
 const {
   setupSigners,
   createPodAndTokenDrop,
@@ -14,21 +10,26 @@ const {
   createPeripheryContract,
 } = require("./utilities/contracts");
 
-describe("PodManager", function() {
+const { ethers } = hardhat
+const { utils } = ethers
+
+describe("PodManager - Fork", function() {
   let testing = {};
-  const config = getConfig("mainnet");
+  let POOL = '0x0cEC1A9154Ff802e7934Fc916Ed7Ca50bDE6844e'
+  let USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+  let DAI = '0x6b175474e89094c44da98b954eedeac495271d0f';
+  let WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 
   before(async () => {
     testing = await setupSigners(testing);
     testing = await setupContractFactories(testing);
     testing = await createPeripheryContract(testing, prizePoolDefault);
-
     testing.POD_NFT = await ethers.getContractFactory("PodNFT");
 
     // Set Ticket
     testing.USDC = await ethers.getContractAt(
       "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
-      '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC
+      USDC
     );
   });
 
@@ -51,8 +52,8 @@ describe("PodManager", function() {
 
     beforeEach(async () => {
       await purchaseToken(
-        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH
-        '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
+        WETH, // WETH
+        USDC, // USDC
         utils.parseEther("30"),
         testing.owner.address,
         {
@@ -78,7 +79,7 @@ describe("PodManager", function() {
 
       // withdrawERC20()
       expect(
-        testing.pod.withdrawERC20(config.tokens.POOL, utils.parseUnits("1000"))
+        testing.pod.withdrawERC20(POOL, utils.parseUnits("1000"))
       ).to.be.revertedWith("Pod:invalid-target-token");
     });
 
@@ -97,7 +98,7 @@ describe("PodManager", function() {
 
       // withdrawERC20()
       await testing.pod.withdrawERC20(
-        config.tokens.USDC,
+        USDC,
         utils.parseUnits("1000", 6)
       );
     });
@@ -117,14 +118,14 @@ describe("PodManager", function() {
       // liquidate() - liquidate USDC to DAI for Pod
       await testing.podManager.liquidate(
         testing.pod.address,
-        config.tokens.USDC,
+        USDC,
         utils.parseUnits("1000", 6),
         utils.parseEther("0"),
-        [config.tokens.USDC, config.tokens.WETH, config.podDAI.token] // USDC => WETH => DAI
+        [USDC, WETH, DAI] // USDC => WETH => DAI
       );
 
       expect(await testing.USDC.balanceOf(testing.pod.address)).to.equal(
-        toWei("0")
+        utils.parseEther("0")
       );
     });
   });

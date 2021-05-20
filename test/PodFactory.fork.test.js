@@ -5,7 +5,6 @@ const { prizePoolDefault } = require("./helpers/constants");
 const {
   setupSigners,
   createPodAndTokenDrop,
-  createPodAndTokenDropFromStaticVariables,
   setupContractFactories,
   createPeripheryContract,
 } = require("./utilities/contracts");

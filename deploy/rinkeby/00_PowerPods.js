@@ -1,12 +1,6 @@
 const hardhat = require("hardhat");
-const { getConfig } = require("../../lib/config");
 const { getPodAndDropAddress } = require("../../lib/deploy");
 const { ethers } = hardhat;
-
-
-function getPodRelatedContracts() {
-
-}
 
 module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   provider = hardhat.ethers.provider;

@@ -32,31 +32,41 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
     /***********************************|
     |   Constants                       |
     |__________________________________*/
-    /// @notice The token that is being disbursed
+    /**
+     * @notice The token that is being disbursed
+     */
     IERC20Upgradeable public asset;
 
-    /// @notice The token that is user to measure a user's portion of disbursed tokens
+    /**
+     * @notice The token that is user to measure a user's portion of disbursed tokens
+     */
     IERC20Upgradeable public measure;
 
-    /// @notice The cumulative exchange rate of measure token supply : dripped tokens
+    /**
+     * @notice The cumulative exchange rate of measure token supply : dripped tokens
+     */
     uint112 public exchangeRateMantissa;
 
-    /// @notice The total amount of tokens that have been dripped but not claimed
+    /**
+     * @notice The total amount of tokens that have been dripped but not claimed
+     */
     uint112 public totalUnclaimed;
 
-    /// @notice The timestamp at which the tokens were last dripped
+    /**
+     * @notice The timestamp at which the tokens were last dripped
+     */
     uint32 public lastDripTimestamp;
 
     /***********************************|
     |   Events                          |
     |__________________________________*/
     /**
-     * @dev Emitted when the the TokenDrop calculates new asset tokens into the exchange rate
+     * @dev Emitted when the new asset tokens are added to the disbursement reserve
      */
     event Dropped(uint256 newTokens);
 
     /**
-     * @dev Emitted when a User claims tokens from the TokenDrop
+     * @dev Emitted when a User claims disbursed tokens
      */
     event Claimed(address indexed user, uint256 newTokens);
 
@@ -88,9 +98,6 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
     {
         require(address(_measure) != address(0), "Pod:invalid-measure-token");
         require(address(_asset) != address(0), "Pod:invalid-asset-token");
-
-        // Initialize ReentrancyGuard
-        __ReentrancyGuard_init();
 
         // Initialize ReentrancyGuard
         __ReentrancyGuard_init();
@@ -167,9 +174,9 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
     }
 
     /**
-     * @notice Drops new tokens.
+     * @notice Add asset tokens to disburment reserve
      * @dev Should be called immediately before any measure token mints/transfers/burns
-     * @return The number of new tokens dropped.
+     * @return The number of new tokens dropped
      */
 
     // change to drop
@@ -213,9 +220,7 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
     function _nonReentrantTransfer(address user, uint256 amount)
         internal
         nonReentrant
-        returns (uint256)
     {
-        // Transfer asset/reward token to user
         asset.safeTransfer(user, amount);
     }
 
@@ -237,13 +242,14 @@ contract TokenDrop is ReentrancyGuardUpgradeable {
     }
 
     /**
-     * @notice Captures new tokens for a user
-     * @dev This must be called before changes to the user's balance (i.e. before mint, transfer or burns)
-     * @param user The user to capture tokens for
-     * @return The number of new tokens
+     * @notice Compute new token disbursement for a user
+     * @dev Calculates a user disbursement via the current measure token balance
+     * @param user The user account
+     * @return UserState struct
      */
     function _computeNewTokensForUser(address user)
         private
+        view
         returns (UserState memory)
     {
         UserState memory userState = userStates[user];

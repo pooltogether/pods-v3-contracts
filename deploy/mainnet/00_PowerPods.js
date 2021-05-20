@@ -1,10 +1,10 @@
 const hardhat = require("hardhat");
-const { getConfig } = require("../../lib/config");
 const { getPodAndDropAddress } = require("../../lib/deploy");
 
 module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   provider = hardhat.ethers.provider;
   const { execute } = deployments;
+
   const {
     deployer,
     prizePoolDAI,
@@ -27,8 +27,6 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   // Check ChainID (Mainnet or MainnetFork)
   if (chainId == 1 || chainId == 1337) {
-    const CONFIG = getConfig("mainnet");
-
     // Create DAI Pod
     const createDAI = await execute(
       "PodFactory",
@@ -103,4 +101,4 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   }
 };
 
-module.exports.tags = ["Factories"];
+module.exports.tags = ["Pods"];

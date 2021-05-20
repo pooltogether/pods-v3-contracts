@@ -1,8 +1,8 @@
-const { constants } = require("ethers");
-
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
+
+  console.log(deployer, "deployerdeployer");
 
   const tokenDropFactory = await deploy("TokenDropFactory", {
     from: deployer,
