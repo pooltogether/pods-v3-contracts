@@ -2,6 +2,7 @@
 node_modules
 *-lock.json
 .env
+.envrc
 
 # Hardhat files
 cache
