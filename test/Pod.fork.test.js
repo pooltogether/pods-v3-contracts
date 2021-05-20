@@ -19,9 +19,11 @@ const {
 describe("Pod - Fork", function () {
   const config = getConfig("mainnet");
   let testing = {};
+  let wallet, wallet2, wallet3, wallet4
 
   before(async () => {
     provider = hardhat.ethers.provider;
+    [wallet, wallet2, wallet3, wallet4] = await ethers.getSigners()
     testing = await setupSigners(testing);
     testing = await setupContractFactories(testing);
     testing = await createPeripheryContract(testing, prizePoolDefault);
@@ -56,6 +58,14 @@ describe("Pod - Fork", function () {
     testing.tokenDrop = await ethers.getContractAt(
       "TokenDrop",
       await testing.pod.tokenDrop()
+    );
+  });
+
+  it("should fail when setting TokenDrop from unauthorized account", async function () {
+    testing.pod = testing.pod.connect(wallet2);
+    const setTokenDrop = testing.pod.setTokenDrop(testing.token.address);
+    await expect(setTokenDrop).to.be.revertedWith(
+      "Ownable: caller is not the owner"
     );
   });
 

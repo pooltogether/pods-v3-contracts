@@ -565,30 +565,18 @@ contract Pod is
     }
 
     /**
-<<<<<<< HEAD
      * @notice Pod token balance.
      * @dev Read Pod token balance from external ERC20 contract.
      * @return uint256 Token balance.
-=======
-     * @notice Pod current token balance.
-     * @dev Request's the Pod's current token balance by calling balanceOf(address(this)).
-     * @return uint256 Pod's current token balance.
->>>>>>> master
      */
     function _podTokenBalance() internal view returns (uint256) {
         return token.balanceOf(address(this));
     }
 
     /**
-<<<<<<< HEAD
      * @notice Pod ticket balance.
      * @dev Read Pod ticket balance from external ERC20 contract.
      * @return uint256 Ticket balance.
-=======
-     * @notice Pod current ticket balance.
-     * @dev Request's the Pod's current ticket balance by calling balanceOf(address(this)).
-     * @return uint256 Pod's current ticket balance.
->>>>>>> master
      */
     function _podTicketBalance() internal view returns (uint256) {
         return ticket.balanceOf(address(this));
@@ -654,15 +642,11 @@ contract Pod is
         view
         returns (uint256 amount)
     {
-<<<<<<< HEAD
         if (totalSupply() > 0) {
             return (balance().mul(shares)).div(totalSupply());
         } else {
             return 0;
         }
-=======
-        return (balance().mul(shares)).div(totalSupply());
->>>>>>> master
     }
 
     /**

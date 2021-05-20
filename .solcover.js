@@ -6,6 +6,7 @@ module.exports = {
     "external",
     "mocks",
     "test",
+    "interfaces",
     "libraries/FixedPoint.sol",
     "libraries/ExtendedSafeCast.sol",
     "PodManager.sol",

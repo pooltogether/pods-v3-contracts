@@ -45,12 +45,14 @@ const createPeripheryContract = async (testing, addresses) => {
     addresses.ticket
   );
 
-    // Set Pool
-    testing.pool = await ethers.getContractAt(
-      "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
-      addresses.reward
-    );
-  
+  // Set Pool
+  testing.pool = await ethers.getContractAt(
+    "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:ERC20Upgradeable",
+    addresses.reward
+  );
+
+  testing.reward = testing.pool
+
 
   return testing;
 };
