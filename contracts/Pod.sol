@@ -593,10 +593,11 @@ contract Pod is
         returns (uint256)
     {
         // Check totalSupply to prevent SafeMath: division by zero
-        if (totalSupply() > 0) {
-            return balance().mul(_shares).div(totalSupply());
+        uint256 _totalSupply = totalSupply();
+        if (_totalSupply > 0) {
+            return balance().mul(_shares).div(_totalSupply);
         } else {
-            return 0;
+            return _shares;
         }
     }
 
@@ -641,13 +642,8 @@ contract Pod is
      * @dev Based of the Pod's total token/ticket balance and totalSupply it calculates the pricePerShare.
      */
     function getPricePerShare() external view override returns (uint256) {
-        uint256 _underlying = _calculateUnderlyingTokens(1e18);
-        if (_underlying > 0) {
-            return _underlying;
-        } else {
-            uint256 _decimals = decimals();
-            return 10**_decimals;
-        }
+        uint256 _decimals = decimals();
+        return _calculateUnderlyingTokens(10**_decimals);
     }
 
     /**
@@ -661,12 +657,7 @@ contract Pod is
         view
         returns (uint256 amount)
     {
-        uint256 _balanceOfUser = balanceOf(user);
-        if (_balanceOfUser > 0) {
-            return _calculateUnderlyingTokens(_balanceOfUser);
-        } else {
-            return 0;
-        }
+        return _calculateUnderlyingTokens(balanceOf(user));
     }
 
     /**
