@@ -69,6 +69,7 @@ if (process.env.INFURA_API_KEY && process.env.MNEMONIC_TESTNET) {
 /* --- Mainnet Configuration --- */
 if (process.env.ALCHEMY_API_KEY) {
   networks.mainnet = {
+    gasPrice: 75000000000,
     url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
   };
   if (process.env.MNEMONIC_MAINNET && process.env.MAINNET_DEPLOY) {

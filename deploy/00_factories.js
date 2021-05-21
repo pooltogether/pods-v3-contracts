@@ -4,6 +4,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
+  console.log(deployer, "deployer");
+
   const tokenDropFactory = await deploy("TokenDropFactory", {
     from: deployer,
     args: [],

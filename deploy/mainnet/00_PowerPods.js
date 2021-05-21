@@ -54,50 +54,50 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       6
     );
 
-    const createUNI = await execute(
-      "PodFactory",
-      {
-        from: deployer,
-      },
-      "create",
-      prizePoolUNI,
-      prizePoolUNITicket,
-      prizePoolUNIFaucet,
-      deployer,
-      18
-    );
+    // const createUNI = await execute(
+    //   "PodFactory",
+    //   {
+    //     from: deployer,
+    //   },
+    //   "create",
+    //   prizePoolUNI,
+    //   prizePoolUNITicket,
+    //   prizePoolUNIFaucet,
+    //   deployer,
+    //   18
+    // );
 
-    const createCOMP = await execute(
-      "PodFactory",
-      {
-        from: deployer,
-      },
-      "create",
-      prizePoolCOMP,
-      prizePoolCOMPTicket,
-      prizePoolCOMPFaucet,
-      deployer,
-      18
-    );
+    // const createCOMP = await execute(
+    //   "PodFactory",
+    //   {
+    //     from: deployer,
+    //   },
+    //   "create",
+    //   prizePoolCOMP,
+    //   prizePoolCOMPTicket,
+    //   prizePoolCOMPFaucet,
+    //   deployer,
+    //   18
+    // );
 
-    const createPOOL = await execute(
-      "PodFactory",
-      {
-        from: deployer,
-      },
-      "create",
-      prizePoolPOOL,
-      prizePoolPOOLTicket,
-      prizePoolPOOLFaucet,
-      deployer,
-      18
-    );
+    // const createPOOL = await execute(
+    //   "PodFactory",
+    //   {
+    //     from: deployer,
+    //   },
+    //   "create",
+    //   prizePoolPOOL,
+    //   prizePoolPOOLTicket,
+    //   prizePoolPOOLFaucet,
+    //   deployer,
+    //   18
+    // );
 
     await getPodAndDropAddress(createDAI.transactionHash, deployments, "DAI");
     await getPodAndDropAddress(createUSDC.transactionHash, deployments, "USDC");
-    await getPodAndDropAddress(createUNI.transactionHash, deployments, "UNI");
-    await getPodAndDropAddress(createCOMP.transactionHash, deployments, "COMP");
-    await getPodAndDropAddress(createPOOL.transactionHash, deployments, "POOL");
+    // await getPodAndDropAddress(createUNI.transactionHash, deployments, "UNI");
+    // await getPodAndDropAddress(createCOMP.transactionHash, deployments, "COMP");
+    // await getPodAndDropAddress(createPOOL.transactionHash, deployments, "POOL");
   }
 };
 

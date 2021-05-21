@@ -1,4 +1,4 @@
-require("dotenv").config();
+// require("dotenv").config();
 require("solidity-coverage");
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-waffle");
@@ -19,7 +19,6 @@ const networks = require("./hardhat.networks");
 // Hardhat Configuration
 module.exports = {
   defaultNetwork: "hardhat",
-  // defaultNetwork: "localhost",
   networks,
   namedAccounts: {
     deployer: {
