@@ -1,13 +1,21 @@
-# Pods (PoolTogether)
+<p align="center">
+  <a href="https://github.com/pooltogether/pooltogether--brand-assets">
+    <img src="https://github.com/pooltogether/pooltogether--brand-assets/blob/977e03604c49c63314450b5d432fe57d34747c66/logo/pooltogether-logo--purple-gradient.png?raw=true" alt="PoolTogether Brand" style="max-width:100%;" width="200">
+  </a>
+</p>
 
-[![<PoolTogether>](https://circleci.com/gh/pooltogether/pods-v3-contracts.svg?style=shield)](https://circleci.com/gh/pooltogether/pods-v3-contracts) [![Coverage Status](https://coveralls.io/repos/github/pooltogether/pods-v3-contracts/badge.svg?branch=pod/tests)](https://coveralls.io/github/pooltogether/pods-v3-contracts?branch=pod/tests)
+<br />
+
+# PoolTogether v3 - Pods Smart Contracts
+
+[![<PoolTogether>](https://circleci.com/gh/pooltogether/pods-v3-contracts.svg?style=shield)](https://circleci.com/gh/pooltogether/pods-v3-contracts) [![Coverage Status](https://coveralls.io/repos/github/pooltogether/pods-v3-contracts/badge.svg?branch=pod/tests)](https://coveralls.io/github/pooltogether/pods-v3-contracts?branch=pod/tests) [![built-with openzeppelin](https://img.shields.io/badge/built%20with-OpenZeppelin-3677FF)](https://docs.openzeppelin.com/)
 
 The Pods smart contracts are a periphery smart contract collection for PoolTogether
 
 - Lower Gas Fees
 - Increased Chances of Winning
 
-#### Setup
+## Setup
 
 Install dependencies:
 
@@ -33,9 +41,9 @@ To setup the local Hardhat EVM, run:
 $ yarn hardhat node
 ```
 
-Depending on the .enrvc seup the Hardhat EVM will either be a fresh blockchain or a mainnet fork.
+Depending on the .enrvc setup the Hardhat EVM will be new blockchain or a mainnet fork.
 
-### Overview
+## Overview
 
 The smart contracts are categorized into multiple categories
 
