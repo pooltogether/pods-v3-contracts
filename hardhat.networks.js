@@ -43,6 +43,7 @@ if (process.env.ALCHEMY_API_KEY && process.env.FORK_ENABLED_CHAINID) {
 /* --- Testnet(s) Configuration --- */
 if (process.env.INFURA_API_KEY && process.env.MNEMONIC_TESTNET) {
   networks.kovan = {
+    gasPrice: 10000000000,
     url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
     accounts: {
       mnemonic: process.env.MNEMONIC_TESTNET,
@@ -50,6 +51,7 @@ if (process.env.INFURA_API_KEY && process.env.MNEMONIC_TESTNET) {
   };
 
   networks.ropsten = {
+    gasPrice: 10000000000,
     url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
     accounts: {
       mnemonic: process.env.MNEMONIC_TESTNET,
@@ -57,6 +59,7 @@ if (process.env.INFURA_API_KEY && process.env.MNEMONIC_TESTNET) {
   };
 
   networks.rinkeby = {
+    gasPrice: 10000000000,
     url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
     accounts: {
       mnemonic: process.env.MNEMONIC_TESTNET,
@@ -69,7 +72,7 @@ if (process.env.INFURA_API_KEY && process.env.MNEMONIC_TESTNET) {
 /* --- Mainnet Configuration --- */
 if (process.env.ALCHEMY_API_KEY) {
   networks.mainnet = {
-    gasPrice: 75000000000,
+    gasPrice: 52000000000,
     url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
   };
   if (process.env.MNEMONIC_MAINNET && process.env.MAINNET_DEPLOY) {
